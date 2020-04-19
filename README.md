@@ -10,3 +10,20 @@ vf new todoist
 vf activate todoist
 pip install -r requirements.txt
 ```
+
+The `TODOIST_API_TOKEN` must be set to the API token for the account. The token can be retrieved by going to `Todoist Settings -> Integrations -> API token`.
+
+## Scripts
+
+### Add List of Tasks to a New Section
+
+The `add-tasks-to-section.py` script will take a list of tasks that have been specified in a file and add them to a new section. There are 2 prompts: one to select the project to add the section to, and another to specify the name of the new section. The file that specifies the tasks to add must be supplied as an argument to the script. It can be a relative path.
+
+The file should be in the following format:
+```
+MAP01: 100% playthrough; ['reward', 'games', 'home']
+MAP01: 100% no saves playthrough; ['reward', 'games', 'home']
+MAP01: 100% no saves demo; ['reward', 'games', 'home']
+```
+
+Where the `;` separates the name of the task and the list of labels to apply to it.
