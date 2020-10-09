@@ -8,6 +8,7 @@ from todoist.api import TodoistAPI
 
 api_token = os.getenv('TODOIST_API_TOKEN')
 api = TodoistAPI(api_token)
+api.sync()
 
 def create_section(project_id):
     section_name = input('Please enter the name of the section to add:\n')
