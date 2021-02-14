@@ -5,6 +5,9 @@ import sys
 
 from todoist.api import TodoistAPI
 from labels import get_label_ids
+from lib import create_merge_subtask
+from lib import create_subtask
+from lib import create_terraform_merge_subtask
 from projects import get_user_project_selection
 
 api_token = os.getenv('TODOIST_API_TOKEN')
@@ -33,13 +36,7 @@ def create_sub_tasks(root_task_id, project_id):
         name = input(">> ")
         if name == "quit":
             break
-        subtask = api.items.add(
-            name,
-            project_id=project_id,
-            parent_id=root_task_id,
-            labels=get_label_ids(api, ["work", "development"]))
-        api.commit()
-        print("Created subtask '{name}'".format(name=subtask["content"]))
+        create_subtask(api, name, project_id, root_task_id)
 
 def get_terraform_modules():
     modules = [
@@ -68,39 +65,22 @@ def get_terraform_modules():
 
 def create_module_subtasks(project_id, root_task_id, jira_ref, modules):
     for module in modules.keys():
-        merge_subtask = api.items.add(
-            "Merge `{jira_ref}` into `master` on `{module}`".format(
-                jira_ref=jira_ref, module=module),
-            project_id=project_id,
-            parent_id=root_task_id,
-            labels=get_label_ids(api, ["work", "development"]))
-        api.commit()
-        print("Created subtask '{name}'".format(name=merge_subtask["content"]))
-        tag_subtask = api.items.add(
+        create_merge_subtask(api, project_id, root_task_id, jira_ref, module, "master")
+        create_subtask(
+            api,
             "Tag `{module}` at `{version}`".format(module=module, version=modules[module]),
-            project_id=project_id,
-            parent_id=root_task_id,
-            labels=get_label_ids(api, ["work", "development"]))
-        api.commit()
-        print("Created subtask '{name}'".format(name=tag_subtask["content"]))
+            project_id,
+            root_task_id)
 
 def create_main_repo_subtasks(project_id, root_task_id, jira_ref, modules):
     for module in modules.keys():
-        update_subtask = api.items.add(
+        create_subtask(
+            api,
             "Update `terraform` to use `{version}` of `{module}`".format(
                 version=modules[module], module=module),
-            project_id=project_id,
-            parent_id=root_task_id,
-            labels=get_label_ids(api, ["work", "development"]))
-        print("Created subtask '{name}'".format(name=update_subtask["content"]))
-        api.commit()
-    merge_subtask = api.items.add(
-        "Merge `{jira_ref}` into `master` on `terraform`".format(jira_ref=jira_ref),
-        project_id=project_id,
-        parent_id=root_task_id,
-        labels=get_label_ids(api, ["work", "development"]))
-    api.commit()
-    print("Created subtask '{name}'".format(name=merge_subtask["content"]))
+            project_id,
+            root_task_id)
+    create_terraform_merge_subtask(api, project_id, root_task_id, jira_ref, "master")
 
 def main():
     project_id = get_user_project_selection(api)[1]
