@@ -5,6 +5,8 @@ import os
 import sys
 
 from todoist.api import TodoistAPI
+from labels import get_label_ids
+from projects import get_user_project_selection
 
 api_token = os.getenv('TODOIST_API_TOKEN')
 api = TodoistAPI(api_token)
@@ -14,29 +16,6 @@ def create_section(project_id):
     section_name = input('Please enter the name of the section to add:\n')
     section = api.sections.add(section_name, project_id=project_id)
     return section
-
-def get_valid_project_selection(projects):
-    print("Please enter the number of the project to add the section to: ")
-    while True:
-        selection = input()
-        try:
-            numeric_selection = int(selection)
-            if numeric_selection < 1 or numeric_selection > len(projects):
-                print('Please enter a value between 1 and {0}.'.format(len(projects)))
-                continue
-            return projects[numeric_selection - 1]
-        except ValueError:
-            print('Please enter a value between 1 and {}.'.format(len(projects)))
-
-def get_user_project_selection():
-    projects = { p['name']:p['id'] for p in api.state['projects'] }
-    count = 1
-    sorted_project_names = sorted(projects.keys())
-    for project in sorted_project_names:
-        print("{num}. {project_name}".format(num=count, project_name=project))
-        count += 1
-    selected_project_name = get_valid_project_selection(sorted_project_names)
-    return (selected_project_name, projects[selected_project_name])
 
 def parse_line(line):
     split = line.strip().split(';')
@@ -49,23 +28,11 @@ def add_tasks_from_file(path, project, section):
     with open(path) as f:
         for line in f.readlines():
             task_name, labels = parse_line(line)
-            label_ids = get_label_ids(labels)
+            label_ids = get_label_ids(api, labels)
             print("Adding {task_name} task to {section} section".format(
                 task_name=task_name, section=section['name']))
             api.items.add(
                 task_name, project_id=project[1], section_id=section['id'], labels=label_ids)
-
-def get_label_ids(labels):
-    label_ids = []
-    for label in labels:
-        try:
-            retrieved_label = next(x for x in api.state['labels'] if label in x['name'])
-        except StopIteration:
-            print("Label '{label}' doesn't exist. Please respecify with a valid label.".format(
-                label=label))
-            sys.exit(1)
-        label_ids.append(retrieved_label['id'])
-    return label_ids
 
 def get_input_file_from_args():
     if len(sys.argv) < 2:
@@ -82,7 +49,7 @@ def get_input_file_from_args():
 
 def main():
     input_task_file_path = get_input_file_from_args()
-    project = get_user_project_selection()
+    project = get_user_project_selection(api)
     section = create_section(project[1])
     add_tasks_from_file(input_task_file_path, project, section)
     api.commit()
