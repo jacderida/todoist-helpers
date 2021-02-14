@@ -27,3 +27,7 @@ MAP01: 100% no saves demo; ['reward', 'games', 'home']
 ```
 
 Where the `;` separates the name of the task and the list of labels to apply to it.
+
+### Create Terraform Task
+
+For development work, I like to have the main outcome of the work as the 'parent' task, with the subtasks being all the steps involved in completing the work. There are subtasks I wanted to have that I found myself creating all the time and that got pretty tedious, so I decided to automate it with this script.
