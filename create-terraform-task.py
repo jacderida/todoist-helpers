@@ -82,6 +82,14 @@ def create_main_repo_subtasks(project_id, root_task_id, jira_ref, modules):
             root_task_id)
     create_terraform_merge_subtask(api, project_id, root_task_id, jira_ref, "master")
 
+def create_jira_admin_task(project_id, root_task_id, jira_ref):
+    create_subtask(
+        api,
+        "Close `{jira_ref}`".format(jira_ref=jira_ref),
+        project_id,
+        root_task_id,
+        ["work", "admin"])
+
 def main():
     project_id = get_user_project_selection(api)[1]
     jira_ref = get_jira_reference()
@@ -90,6 +98,7 @@ def main():
     modules = get_terraform_modules()
     create_module_subtasks(project_id, root_id, jira_ref, modules)
     create_main_repo_subtasks(project_id, root_id, jira_ref, modules)
+    create_jira_admin_task(project_id, root_id, jira_ref)
 
 if __name__ == '__main__':
     sys.exit(main())

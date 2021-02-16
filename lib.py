@@ -11,29 +11,35 @@ def create_merge_subtask(api, project_id, root_task_id, branch, repo, target, te
             branch=branch, target=target, repo=repo),
         project_id,
         root_task_id)
+    merge_subtask_id = merge_subtask["id"]
+    create_subtask(
+        api,
+        "Rebase `master` into `{branch}`".format(branch=branch),
+        project_id,
+        merge_subtask_id)
     if terraform_repo:
         create_subtask(
             api,
             "Run a `terraform plan` for the `prod` environment",
             project_id,
-            merge_subtask["id"])
+            merge_subtask_id)
         create_subtask(
             api,
             "Run a `terraform plan` for the `int` environment",
             project_id,
-            merge_subtask["id"])
+            merge_subtask_id)
     create_subtask(
         api,
         "Submit pull request for `{branch}`".format(branch=branch),
         project_id,
-        merge_subtask["id"])
+        merge_subtask_id)
 
-def create_subtask(api, content, project_id, parent_id):
+def create_subtask(api, content, project_id, parent_id, labels=["work", "development"]):
     subtask = api.items.add(
         content,
         project_id=project_id,
         parent_id=parent_id,
-        labels=get_label_ids(api, ["work", "development"]))
+        labels=get_label_ids(api, labels))
     api.commit()
     print("Created subtask '{name}'".format(name=subtask["content"]))
     return subtask
