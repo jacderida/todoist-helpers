@@ -3,42 +3,23 @@
 import os
 import sys
 
+from dev.tasks import create_jira_admin_task
+from dev.tasks import create_merge_subtask
+from dev.tasks import create_subtask
+from dev.tasks import create_terraform_merge_subtask
+from dev.ui import ui_create_root_task
+from dev.ui import ui_create_sub_tasks
+from dev.ui import ui_get_jira_reference
+
 from todoist.api import TodoistAPI
 from labels import get_label_ids
-from lib import create_merge_subtask
-from lib import create_subtask
-from lib import create_terraform_merge_subtask
-from projects import get_user_project_selection
+from projects import ui_get_user_project_selection
 
 api_token = os.getenv('TODOIST_API_TOKEN')
 api = TodoistAPI(api_token)
 api.sync()
 
-def get_jira_reference():
-    print("Please supply the JIRA reference")
-    jira_ref = input(">> ")
-    return jira_ref
-
-def create_root_task(project_id, jira_ref):
-    print("Please supply the name of the main task")
-    name = input(">> ")
-    print("Creating task '{name} [{jira_ref}]'".format(name=name, jira_ref=jira_ref))
-    root_task = api.items.add(
-        "{name} [{jira_ref}]".format(name=name, jira_ref=jira_ref),
-        project_id=project_id,
-        labels=get_label_ids(api, ["work", "development"]))
-    api.commit()
-    return root_task['id']
-
-def create_sub_tasks(root_task_id, project_id):
-    while True:
-        print("Please enter the name of a subtask to add (or enter 'quit' to stop)")
-        name = input(">> ")
-        if name == "quit":
-            break
-        create_subtask(api, name, project_id, root_task_id)
-
-def get_terraform_modules():
+def ui_get_terraform_modules():
     modules = [
         "terraform_dcf_entrypoint",
         "terraform_dcf_networking"
@@ -82,23 +63,15 @@ def create_main_repo_subtasks(project_id, root_task_id, jira_ref, modules):
             root_task_id)
     create_terraform_merge_subtask(api, project_id, root_task_id, jira_ref, "master")
 
-def create_jira_admin_task(project_id, root_task_id, jira_ref):
-    create_subtask(
-        api,
-        "Close `{jira_ref}`".format(jira_ref=jira_ref),
-        project_id,
-        root_task_id,
-        ["work", "admin"])
-
 def main():
-    project_id = get_user_project_selection(api)[1]
-    jira_ref = get_jira_reference()
-    root_id = create_root_task(project_id, jira_ref)
-    create_sub_tasks(root_id, project_id)
-    modules = get_terraform_modules()
+    project_id = ui_get_user_project_selection(api)[1]
+    jira_ref = ui_get_jira_reference()
+    root_id = ui_create_root_task(api, project_id, jira_ref)
+    ui_create_sub_tasks(api, root_id, project_id)
+    modules = ui_get_terraform_modules()
     create_module_subtasks(project_id, root_id, jira_ref, modules)
     create_main_repo_subtasks(project_id, root_id, jira_ref, modules)
-    create_jira_admin_task(project_id, root_id, jira_ref)
+    create_jira_admin_task(api, project_id, root_id, jira_ref)
 
 if __name__ == '__main__':
     sys.exit(main())

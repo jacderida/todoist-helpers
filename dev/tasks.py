@@ -43,3 +43,11 @@ def create_subtask(api, content, project_id, parent_id, labels=["work", "develop
     api.commit()
     print("Created subtask '{name}'".format(name=subtask["content"]))
     return subtask
+
+def create_jira_admin_task(api, project_id, root_task_id, jira_ref):
+    create_subtask(
+        api,
+        "Close `{jira_ref}`".format(jira_ref=jira_ref),
+        project_id,
+        root_task_id,
+        ["work", "admin"])
