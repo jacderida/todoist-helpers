@@ -4,6 +4,13 @@ def create_terraform_merge_subtask(api, project_id, root_task_id, branch, target
     create_merge_subtask(
         api, project_id, root_task_id, branch, "terraform", target, terraform_repo=True)
 
+def create_branch_subtask(api, project_id, root_task_id, repo, branch):
+    create_subtask(
+        api,
+        "Create branch `{branch}` on `{repo}`".format(branch=branch, repo=repo),
+        project_id,
+        root_task_id)
+
 def create_merge_subtask(api, project_id, root_task_id, branch, repo, target, terraform_repo=False):
     merge_subtask = create_subtask(
         api,
