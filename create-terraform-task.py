@@ -10,7 +10,7 @@ from dev.tasks import create_subtask
 from dev.tasks import create_terraform_merge_subtask
 from dev.ui import print_heading
 from dev.ui import ui_create_root_task
-from dev.ui import ui_create_sub_tasks
+from dev.ui import ui_create_subtasks
 from dev.ui import ui_get_jira_reference
 
 from todoist.api import TodoistAPI
@@ -56,7 +56,7 @@ def create_module_subtasks(project_id, root_task_id, jira_ref, modules):
     for module in modules.keys():
         create_branch_subtask(api, project_id, root_task_id, jira_ref, module)
         print()
-        ui_create_sub_tasks(
+        ui_create_subtasks(
             api,
             root_task_id,
             project_id,
@@ -84,7 +84,7 @@ def main():
     project_id = ui_get_user_project_selection(api)[1]
     jira_ref = ui_get_jira_reference()
     root_id = ui_create_root_task(api, project_id, jira_ref, "terraform")
-    ui_create_sub_tasks(
+    ui_create_subtasks(
         api,
         root_id,
         project_id,
@@ -94,7 +94,7 @@ def main():
     create_module_subtasks(project_id, root_id, jira_ref, modules)
     create_main_repo_subtasks(project_id, root_id, jira_ref, modules)
     create_jira_admin_task(api, project_id, root_id, jira_ref)
-    ui_create_sub_tasks(
+    ui_create_subtasks(
         api,
         root_id,
         project_id,

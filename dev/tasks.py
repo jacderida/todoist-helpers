@@ -1,5 +1,16 @@
 from labels import get_label_ids
 
+def create_subtasks_from_file(api, subtasks_path, project_id, root_task_id):
+    with open(subtasks_path, 'r') as f:
+        for line in f.readlines():
+            name = line.strip()
+            comment = ""
+            if ";" in line:
+                split = line.split(";")
+                name = split[0].strip()
+                comment = split[1].strip()
+            create_subtask(api, name, project_id, root_task_id, comment=comment)
+
 def create_terraform_merge_subtask(api, project_id, root_task_id, branch, target):
     create_merge_subtask(
         api, project_id, root_task_id, branch, "terraform", target, terraform_repo=True)
@@ -41,16 +52,6 @@ def create_merge_subtask(api, project_id, root_task_id, branch, repo, target, te
         project_id,
         merge_subtask_id)
 
-def create_subtask(api, content, project_id, parent_id, labels=["work", "development"]):
-    subtask = api.items.add(
-        content,
-        project_id=project_id,
-        parent_id=parent_id,
-        labels=get_label_ids(api, labels))
-    api.commit()
-    print("Created subtask '{name}'".format(name=subtask["content"]))
-    return subtask
-
 def create_jira_admin_task(api, project_id, root_task_id, jira_ref):
     create_subtask(
         api,
@@ -58,3 +59,17 @@ def create_jira_admin_task(api, project_id, root_task_id, jira_ref):
         project_id,
         root_task_id,
         ["work", "admin"])
+
+def create_subtask(api, content, project_id, parent_id, labels=["work", "development"], comment=""):
+    subtask = api.items.add(
+        content,
+        project_id=project_id,
+        parent_id=parent_id,
+        labels=get_label_ids(api, labels))
+    api.commit()
+    print("Created subtask '{name}'".format(name=subtask["content"]))
+    if comment:
+        api.notes.add(subtask["id"], comment)
+        api.commit()
+        print("Added comment to subtask '{name}'".format(name=subtask["content"]))
+    return subtask

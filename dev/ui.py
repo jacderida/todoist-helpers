@@ -1,6 +1,15 @@
 from labels import get_label_ids
 from .tasks import create_subtask
+from .tasks import create_subtasks_from_file
 from .tasks import create_branch_subtask
+
+REPOS = [
+    "ansible",
+    "ansible_modern",
+    "cps_stacks",
+    "dcf",
+    "eunomia"
+]
 
 def ui_get_jira_reference():
     print_heading("JIRA Reference")
@@ -9,7 +18,7 @@ def ui_get_jira_reference():
     print()
     return jira_ref
 
-def ui_create_sub_tasks(api, root_task_id, project_id, heading, subheading):
+def ui_create_subtasks(api, root_task_id, project_id, heading, subheading):
     print_heading(heading)
     print(subheading)
     while True:
@@ -36,22 +45,21 @@ def ui_create_root_task(api, project_id, jira_ref, repo):
     print()
     return root_task_id
 
-# def ui_get_repos():
-    # repos = [
-        # "ansible",
-        # "ansible_modern",
-        # "dcf",
-        # "eunomia"
-    # ]
-    # print("The following repos are available:")
-    # count = 1
-    # for repo in repos:
-        # print("{num}. {name}".format(num=count, name=repo))
-        # count += 1
-    # print("Use a comma separated list to select the repos to use for this task")
-    # selected = input(">> ")
-    # print()
-    # return [repos[int(x) - 1] for x in selected.split(",")]
+def ui_get_main_repo():
+    print_heading("Main Repo")
+    print("The following repos are available:")
+    count = 1
+    for repo in REPOS:
+        print("{num}. {name}".format(num=count, name=repo))
+        count += 1
+    print("Select the main repository for this work")
+    selected = input(">> ")
+    print()
+    return REPOS[int(selected) - 1]
+
+def ui_create_subtasks_from_file(api, subtasks_path, root_task_id, project_id):
+    print_heading("Defining Subtasks from File")
+    create_subtasks_from_file(api, subtasks_path, root_task_id, project_id)
 
 def print_heading(heading):
     print("=" * (len(heading) + 4))
