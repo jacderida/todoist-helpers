@@ -8,7 +8,9 @@ REPOS = [
     "ansible_modern",
     "cps_stacks",
     "dcf",
-    "eunomia"
+    "eunomia",
+    "terraform",
+    "terraform_modern"
 ]
 
 def ui_get_jira_reference():
