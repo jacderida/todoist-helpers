@@ -22,8 +22,8 @@ api.sync()
 def main(subtasks_path):
     project_id = ui_get_user_project_selection(api)[1]
     jira_ref = ui_get_jira_reference()
-    main_repo = ui_get_main_repo()
-    root_task_id = ui_create_root_task(api, project_id, jira_ref, main_repo)
+    repos = ui_get_main_repo()
+    root_task_id = ui_create_root_task(api, project_id, jira_ref, repos)
     if subtasks_path:
         ui_create_subtasks_from_file(api, subtasks_path, project_id, root_task_id)
     else:
@@ -33,7 +33,8 @@ def main(subtasks_path):
             project_id,
             "Define Subtasks for Work",
             "Create any subtasks for this work")
-    create_merge_subtask(api, project_id, root_task_id, jira_ref, main_repo, "master")
+    for repo in repos:
+        create_merge_subtask(api, project_id, root_task_id, jira_ref, repo, "master")
     create_jira_admin_task(api, project_id, root_task_id, jira_ref)
 
 if __name__ == '__main__':

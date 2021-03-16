@@ -6,6 +6,7 @@ from .tasks import create_branch_subtask
 REPOS = [
     "ansible",
     "ansible_modern",
+    "cda",
     "cps_stacks",
     "dcf",
     "eunomia",
@@ -32,7 +33,7 @@ def ui_create_subtasks(api, root_task_id, project_id, heading, subheading):
         create_subtask(api, name, project_id, root_task_id)
     print()
 
-def ui_create_root_task(api, project_id, jira_ref, repo):
+def ui_create_root_task(api, project_id, jira_ref, repos):
     print_heading("Main Task Name")
     print("Use a name that reflects the outcome of the work")
     name = input(">> ")
@@ -43,7 +44,8 @@ def ui_create_root_task(api, project_id, jira_ref, repo):
         labels=get_label_ids(api, ["work", "development"]))
     api.commit()
     root_task_id = root_task["id"]
-    create_branch_subtask(api, project_id, root_task_id, repo, jira_ref)
+    for repo in repos:
+        create_branch_subtask(api, project_id, root_task_id, repo, jira_ref)
     print()
     return root_task_id
 
@@ -54,10 +56,15 @@ def ui_get_main_repo():
     for repo in REPOS:
         print("{num}. {name}".format(num=count, name=repo))
         count += 1
-    print("Select the main repository for this work")
+    print("Select the repositories for this work using a comma separated list")
     selected = input(">> ")
     print()
-    return REPOS[int(selected) - 1]
+    selected_repos = []
+    if "," in selected:
+        selected_repos = [REPOS[int(x) - 1] for x in selected.split(",")]
+    else:
+        selected_repos = [REPOS[int(selected) - 1]]
+    return selected_repos
 
 def ui_create_subtasks_from_file(api, subtasks_path, root_task_id, project_id):
     print_heading("Defining Subtasks from File")
