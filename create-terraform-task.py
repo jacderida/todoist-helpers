@@ -83,7 +83,7 @@ def create_main_repo_subtasks(project_id, root_task_id, jira_ref, modules):
 def main():
     project_id = ui_get_user_project_selection(api)[1]
     jira_ref = ui_get_jira_reference()
-    root_id = ui_create_root_task(api, project_id, jira_ref, "terraform")
+    root_id = ui_create_root_task(api, project_id, jira_ref, ["terraform"])
     ui_create_subtasks(
         api,
         root_id,
