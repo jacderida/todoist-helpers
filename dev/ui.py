@@ -33,7 +33,7 @@ def ui_create_subtasks(api, root_task_id, project_id, heading, subheading):
         create_subtask(api, name, project_id, root_task_id)
     print()
 
-def ui_create_root_task(api, project_id, jira_ref, repos):
+def ui_create_root_task(api, project_id, jira_ref, repos=[], extra_labels=[]):
     print_heading("Main Task Name")
     print("Use a name that reflects the outcome of the work")
     name = input(">> ")
@@ -41,7 +41,7 @@ def ui_create_root_task(api, project_id, jira_ref, repos):
     root_task = api.items.add(
         "{jira_ref}: {name}".format(jira_ref=jira_ref, name=name),
         project_id=project_id,
-        labels=get_label_ids(api, ["work", "development"]))
+        labels=get_label_ids(api, ["work", "development"] + extra_labels))
     api.commit()
     root_task_id = root_task["id"]
     for repo in repos:

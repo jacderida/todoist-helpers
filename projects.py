@@ -10,6 +10,13 @@ def ui_get_user_project_selection(api):
     print()
     return (selected_project_name, projects[selected_project_name])
 
+def get_project_id(api, name):
+    projects = { p['name']:p['id'] for p in api.state['projects'] }
+    id = projects.get(name)
+    if not id:
+        raise ValueError("The project {} doesn't exist".format(name))
+    return id
+
 def get_valid_project_selection(projects):
     print("Please select the project to work with: ")
     while True:
