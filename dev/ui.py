@@ -41,6 +41,7 @@ def ui_create_root_task(api, project_id, jira_ref, repos=[], extra_labels=[]):
     root_task = api.items.add(
         "{jira_ref}: {name}".format(jira_ref=jira_ref, name=name),
         project_id=project_id,
+        due={'string': "Today"},
         labels=get_label_ids(api, ["work", "development"] + extra_labels))
     api.commit()
     root_task_id = root_task["id"]

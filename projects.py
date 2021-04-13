@@ -1,5 +1,10 @@
-def ui_get_user_project_selection(api):
-    projects = { p['name']:p['id'] for p in api.state['projects'] }
+WORK_PARENT_PROJECT_ID = 2235604758
+
+def ui_select_work_project(api):
+    projects = {
+        p['name']:p['id']
+        for p in api.state['projects'] if p['parent_id'] == WORK_PARENT_PROJECT_ID
+    }
     count = 1
     sorted_project_names = sorted(projects.keys())
     for project in sorted_project_names:

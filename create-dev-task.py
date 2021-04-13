@@ -12,7 +12,7 @@ from dev.ui import ui_create_subtasks
 from dev.ui import ui_create_subtasks_from_file
 from dev.ui import ui_get_jira_reference
 from dev.ui import ui_get_main_repo
-from projects import ui_get_user_project_selection
+from projects import ui_select_work_project
 from todoist.api import TodoistAPI
 
 api_token = os.getenv('TODOIST_API_TOKEN')
@@ -20,7 +20,7 @@ api = TodoistAPI(api_token)
 api.sync()
 
 def main(subtasks_path):
-    project_id = ui_get_user_project_selection(api)[1]
+    project_id = ui_select_work_project(api)[1]
     jira_ref = ui_get_jira_reference()
     repos = ui_get_main_repo()
     root_task_id = ui_create_root_task(api, project_id, jira_ref, repos)
