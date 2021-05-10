@@ -107,6 +107,7 @@ def main():
         current_day_outline_tasks = get_current_day_outline_tasks()
         shifted_tasks = build_shifted_outline(current_day_outline_tasks)
         for task in shifted_tasks:
+            print('Shifting "{}" to {}'.format(task.name, task.due))
             item = api.items.get_by_id(task.id)
             item.update(
                 due={ 'date': datetime.strftime(task.due, '%Y-%m-%dT%H:%M:%S') })
