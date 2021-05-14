@@ -1,2 +1,4 @@
 todoist-python
 parse
+azure-cli
+httpie
