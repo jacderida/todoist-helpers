@@ -1,4 +1,7 @@
+import os
+
 from labels import get_label_ids
+from .tasks import create_parent_task
 from .tasks import create_subtask
 from .tasks import create_subtasks_from_file
 from .tasks import create_branch_subtask
@@ -37,18 +40,32 @@ def ui_create_root_task(api, project_id, jira_ref, repos=[], extra_labels=[]):
     print_heading("Main Task Name")
     print("Use a name that reflects the outcome of the work")
     name = input(">> ")
-    print("Creating task '{jira_ref}: {name}'".format(jira_ref=jira_ref, name=name))
-    root_task = api.items.add(
-        "{jira_ref}: {name}".format(jira_ref=jira_ref, name=name),
-        project_id=project_id,
-        due={'string': "Today"},
-        labels=get_label_ids(api, ["work", "development"] + extra_labels))
-    api.commit()
+    root_task = create_parent_task(
+        api,
+        "[{jira_ref}]({jira_link}/{jira_ref}): {name}".format(
+            jira_ref=jira_ref, jira_link=os.environ["JIRA_BASE_URL"], name=name),
+        project_id,
+        ["work", "development"] + extra_labels)
     root_task_id = root_task["id"]
     for repo in repos:
         create_branch_subtask(api, project_id, root_task_id, repo, jira_ref)
     print()
     return root_task_id
+
+def ui_get_whitelist_entries_to_create():
+    whitelist_entries = []
+    print_heading("Create New Whitelist Task")
+    while True:
+        print("Please enter the name and IP address of the person for whitelisting.")
+        print("They should be separated by a semi-colon.")
+        print("Enter 'quit' to stop adding entries")
+        entry = input(">> ")
+        if entry == "quit":
+            break
+        split = entry.split(";")
+        whitelist_entries.append((split[0].strip(), split[1].strip()))
+    print()
+    return whitelist_entries
 
 def ui_get_main_repo():
     print_heading("Main Repo")
