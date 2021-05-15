@@ -46,6 +46,11 @@ def create_merge_subtask(api, project_id, root_task_id, branch, repo, target, te
             "Run a `terraform plan` for the `int` environment",
             project_id,
             merge_subtask_id)
+        create_subtask(
+            api,
+            "Run a `terraform plan` for the `perf` environment",
+            project_id,
+            merge_subtask_id)
     create_subtask(
         api,
         "Submit pull request for `{branch}`".format(branch=branch),
@@ -60,16 +65,28 @@ def create_jira_admin_task(api, project_id, root_task_id, jira_ref):
         root_task_id,
         ["work", "admin"])
 
+def create_parent_task(api, content, project_id, labels=["work", "development"], comment=""):
+    return create_task(
+        api, content, project_id, None, labels, comment)
+
 def create_subtask(api, content, project_id, parent_id, labels=["work", "development"], comment=""):
-    subtask = api.items.add(
+    return create_task(
+        api, content, project_id, parent_id, labels, comment)
+
+def create_task(api, content, project_id, parent_id=None, labels=["work", "development"], comment=""):
+    task = api.items.add(
         content,
         project_id=project_id,
         parent_id=parent_id,
+        due={"string": "Today"},
         labels=get_label_ids(api, labels))
     api.commit()
-    print("Created subtask '{name}'".format(name=subtask["content"]))
+    if parent_id:
+        print("Created subtask '{name}'".format(name=task["content"]))
+    else:
+        print("Created task '{name}'".format(name=task["content"]))
     if comment:
-        api.notes.add(subtask["id"], comment)
+        api.notes.add(task["id"], comment)
         api.commit()
-        print("Added comment to subtask '{name}'".format(name=subtask["content"]))
-    return subtask
+        print("Added comment to '{name}'".format(name=task["content"]))
+    return task
