@@ -74,11 +74,13 @@ def create_subtask(api, content, project_id, parent_id, labels=["work", "develop
         api, content, project_id, parent_id, labels, comment)
 
 def create_task(api, content, project_id, parent_id=None, labels=["work", "development"], comment=""):
+    due = None
+    if not parent_id: due = {"string": "Today"}
     task = api.items.add(
         content,
         project_id=project_id,
         parent_id=parent_id,
-        due={"string": "Today"},
+        due=due,
         labels=get_label_ids(api, labels))
     api.commit()
     if parent_id:
