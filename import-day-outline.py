@@ -8,7 +8,7 @@ Parses a day outline in a given file and adds each line as a task. Here is an ex
 14:00:00; Meetings; ODSC Management Meeting [0.5 hours]; ['work', 'call']
 14:30:00; Meetings; Azure Walkthrough [1 hour]; ['work', 'call']
 15:30:00; Day Outline; Afternoon Work [4 hours]; ['work', 'development']
-19:30:00; Day Outline; Shutdown Checklist [0.5 hours]; ['work', 'admin'] 
+19:30:00; Day Outline; Shutdown Checklist [0.5 hours]; ['work', 'admin']
 
 The columns are time, project name, content (task name), labels.
 """
@@ -32,26 +32,35 @@ def parse_labels(label_string):
     labels = ast.literal_eval(label_string)
     return [l.strip() for l in labels]
 
-def main(outline_path):
-    tomorrow = datetime.strftime(datetime.now() + timedelta(days=1), "%Y-%m-%d")
+def main(outline_path, use_today):
+    if use_today:
+        date = datetime.strftime(datetime.now(), "%Y-%m-%d")
+    else:
+        date = datetime.strftime(datetime.now() + timedelta(days=1), "%Y-%m-%d")
     with open(outline_path) as f:
         for line in f.readlines():
             split = line.split(";")
             time = split[0].strip()
-            content = split[1].strip()
-            project = split[2].strip()
+            project = split[1].strip()
+            content = split[2].strip()
             labels = split[3].strip()
             project_id = get_project_id(api, project)
             print("{}: {} to {}".format(time, content, project))
             api.items.add(
                 project_id=project_id,
                 content=content,
-                due={"date": "{}T{}".format(tomorrow, time)},
+                due={"date": "{}T{}".format(date, time)},
                 labels=get_label_ids(api, parse_labels(labels)))
     api.commit()
 
 if __name__ == "__main__":
     outline_path = ""
-    if len(sys.argv) >= 2:
-        outline_path = sys.argv[1]
-    sys.exit(main(outline_path))
+    use_today = False
+    if len(sys.argv) == 1:
+        print("A path for the file containing the day outline must be supplied")
+        sys.exit(1)
+    outline_path = sys.argv[1]
+    if len(sys.argv) > 2:
+        if sys.argv[2] == "--today":
+            use_today = True
+    sys.exit(main(outline_path, use_today))
