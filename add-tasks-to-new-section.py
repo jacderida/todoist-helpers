@@ -8,26 +8,26 @@ from todoist.api import TodoistAPI
 from labels import get_label_ids
 from projects import ui_select_work_project
 
-api_token = os.getenv('TODOIST_API_TOKEN')
+api_token = os.getenv("TODOIST_API_TOKEN")
 api = TodoistAPI(api_token)
 api.sync()
 
 def create_section(project_id):
-    section_name = input('Please enter the name of the section to add:\n')
+    section_name = input("Please enter the name of the section to add:\n")
     section = api.sections.add(section_name, project_id=project_id)
     return section
 
 def parse_line(line):
-    split = line.strip().split(';')
+    split = line.strip().split(";")
     task_name = split[0].strip()
-    is_sub_task = True if task_name[0] == '-' else False
+    is_sub_task = True if task_name[0] == "-" else False
     labels = ast.literal_eval(split[1].strip())
     task_name = task_name[1:].strip() # remove leading '* ' or '- ' from task name
     return (task_name, [l.strip() for l in labels], is_sub_task)
 
 def add_tasks_from_file(path, project, section):
     print("Adding {section} section to {project} project".format(
-        section=section['name'], project=project[0]))
+        section=section["name"], project=project[0]))
     with open(path) as f:
         parent_id = None
         for line in f.readlines():
@@ -35,17 +35,17 @@ def add_tasks_from_file(path, project, section):
             label_ids = get_label_ids(api, labels)
             if not is_sub_task:
                 print("Adding {task_name} task to {section} section".format(
-                    task_name=task_name, section=section['name']))
+                    task_name=task_name, section=section["name"]))
                 item = api.items.add(
-                    task_name, project_id=project[1], section_id=section['id'], labels=label_ids)
-                parent_id = item['id']
+                    task_name, project_id=project[1], section_id=section["id"], labels=label_ids)
+                parent_id = item["id"]
             else:
                 print("Adding {task_name} subtask to {section} section".format(
-                    task_name=task_name, section=section['name']))
+                    task_name=task_name, section=section["name"]))
                 api.items.add(
                     task_name,
                     project_id=project[1],
-                    section_id=section['id'],
+                    section_id=section["id"],
                     labels=label_ids,
                     parent_id=parent_id)
 
@@ -69,5 +69,5 @@ def main():
     add_tasks_from_file(input_task_file_path, project, section)
     api.commit()
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())
