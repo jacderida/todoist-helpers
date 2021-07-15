@@ -1,25 +1,19 @@
 import os
 
-from labels import get_label_ids
 from .tasks import create_parent_task
 from .tasks import create_subtask
 from .tasks import create_subtasks_from_file
 from .tasks import create_branch_subtask
 
 REPOS = [
-    "ansible",
-    "ansible_modern",
-    "cda",
-    "cps_stacks",
-    "dcf",
-    "eunomia",
-    "terraform",
-    "terraform_modern"
+    "qp2p",
+    "safe_network",
+    "sn_cli"
 ]
 
-def ui_get_jira_reference():
-    print_heading("JIRA Reference")
-    print("Please supply the JIRA story or ticket reference for the work")
+def ui_get_jira_or_branch_ref():
+    print_heading("JIRA/Branch Reference")
+    print("Please supply the JIRA ticket or branch name for the work")
     jira_ref = input(">> ")
     print()
     return jira_ref
@@ -36,19 +30,19 @@ def ui_create_subtasks(api, root_task_id, project_id, heading, subheading):
         create_subtask(api, name, project_id, root_task_id)
     print()
 
-def ui_create_root_task(api, project_id, jira_ref, repos=[], extra_labels=[]):
+def ui_create_root_task(api, project_id, branch_ref, repos=[], extra_labels=[]):
     print_heading("Main Task Name")
     print("Use a name that reflects the outcome of the work")
     name = input(">> ")
-    root_task = create_parent_task(
-        api,
-        "[{jira_ref}]({jira_link}/{jira_ref}): {name}".format(
-            jira_ref=jira_ref, jira_link=os.environ["JIRA_BASE_URL"], name=name),
-        project_id,
-        ["work", "development"] + extra_labels)
+    task_name = name
+    jira_url = os.getenv("JIRA_BASE_URL")
+    if jira_url:
+        task_name = "[{jira_ref}]({jira_url}/{jira_ref}): {name}".format(
+            jira_ref=branch_ref, jira_url=jira_url, name=name),
+    root_task = create_parent_task(api, task_name, project_id, ["work", "development"] + extra_labels)
     root_task_id = root_task["id"]
     for repo in repos:
-        create_branch_subtask(api, project_id, root_task_id, repo, jira_ref)
+        create_branch_subtask(api, project_id, root_task_id, repo, branch_ref)
     print()
     return root_task_id
 

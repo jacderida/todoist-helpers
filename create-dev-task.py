@@ -5,12 +5,10 @@ import sys
 
 from dev.tasks import create_jira_admin_task
 from dev.tasks import create_merge_subtask
-from dev.tasks import create_subtask
-from dev.tasks import create_subtasks_from_file
 from dev.ui import ui_create_root_task
 from dev.ui import ui_create_subtasks
 from dev.ui import ui_create_subtasks_from_file
-from dev.ui import ui_get_jira_reference
+from dev.ui import ui_get_jira_or_branch_ref
 from dev.ui import ui_get_main_repo
 from projects import ui_select_work_project
 from todoist.api import TodoistAPI
@@ -21,9 +19,9 @@ api.sync()
 
 def main(subtasks_path):
     project_id = ui_select_work_project(api)[1]
-    jira_ref = ui_get_jira_reference()
+    branch_ref = ui_get_jira_or_branch_ref()
     repos = ui_get_main_repo()
-    root_task_id = ui_create_root_task(api, project_id, jira_ref, repos)
+    root_task_id = ui_create_root_task(api, project_id, branch_ref, repos)
     if subtasks_path:
         ui_create_subtasks_from_file(api, subtasks_path, project_id, root_task_id)
     else:
@@ -34,8 +32,9 @@ def main(subtasks_path):
             "Define Subtasks for Work",
             "Create any subtasks for this work")
     for repo in repos:
-        create_merge_subtask(api, project_id, root_task_id, jira_ref, repo, "master")
-    create_jira_admin_task(api, project_id, root_task_id, jira_ref)
+        create_merge_subtask(api, project_id, root_task_id, branch_ref, repo, "master")
+    if os.getenv('JIRA_BASE_URL'):
+        create_jira_admin_task(api, project_id, root_task_id, branch_ref)
 
 if __name__ == '__main__':
     subtasks_path = ""
