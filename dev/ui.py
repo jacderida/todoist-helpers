@@ -8,6 +8,7 @@ from .tasks import create_branch_subtask
 REPOS = [
     "qp2p",
     "safe_network",
+    "sn_authd",
     "sn_cli"
 ]
 
