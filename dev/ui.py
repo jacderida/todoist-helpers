@@ -10,7 +10,8 @@ REPOS = [
     "safe_network",
     "self_update",
     "sn_authd",
-    "sn_cli"
+    "sn_cli",
+    "sn_testnet_tool"
 ]
 
 def ui_get_jira_or_branch_ref():
