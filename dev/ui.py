@@ -33,7 +33,7 @@ def ui_create_subtasks(api, root_task_id, project_id, heading, subheading):
         create_subtask(api, name, project_id, root_task_id)
     print()
 
-def ui_create_root_task(api, project_id, branch_ref, repos=[], extra_labels=[]):
+def ui_create_root_dev_task(api, project_id, branch_ref, repos=[], extra_labels=[]):
     print_heading("Main Task Name")
     print("Use a name that reflects the outcome of the work")
     name = input(">> ")
@@ -46,6 +46,15 @@ def ui_create_root_task(api, project_id, branch_ref, repos=[], extra_labels=[]):
     root_task_id = root_task["id"]
     for repo in repos:
         create_branch_subtask(api, project_id, root_task_id, repo, branch_ref)
+    print()
+    return root_task_id
+
+def ui_create_root_dev_admin_task(api, project_id, extra_labels=[]):
+    print_heading("Main Task Name")
+    print("Use a name that reflects the outcome of the work")
+    task_name = input(">> ")
+    root_task = create_parent_task(api, task_name, project_id, ["work", "development", "admin"] + extra_labels)
+    root_task_id = root_task["id"]
     print()
     return root_task_id
 

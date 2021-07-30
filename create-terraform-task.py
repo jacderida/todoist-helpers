@@ -9,7 +9,7 @@ from dev.tasks import create_merge_subtask
 from dev.tasks import create_subtask
 from dev.tasks import create_terraform_merge_subtask
 from dev.ui import print_heading
-from dev.ui import ui_create_root_task
+from dev.ui import ui_create_root_dev_task
 from dev.ui import ui_create_subtasks
 from dev.ui import ui_get_jira_reference
 
@@ -83,7 +83,7 @@ def create_main_repo_subtasks(project_id, root_task_id, jira_ref, modules):
 def main():
     project_id = ui_select_work_project(api)[1]
     jira_ref = ui_get_jira_reference()
-    root_id = ui_create_root_task(api, project_id, jira_ref, ["terraform"])
+    root_id = ui_create_root_dev_task(api, project_id, jira_ref, ["terraform"])
     ui_create_subtasks(
         api,
         root_id,

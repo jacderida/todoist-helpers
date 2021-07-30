@@ -5,8 +5,8 @@ import sys
 
 from dev.tasks import create_jira_admin_task
 from dev.tasks import create_subtask
-from dev.ui import ui_create_root_task
-from dev.ui import ui_get_jira_reference
+from dev.ui import ui_create_root_dev_task
+from dev.ui import ui_get_jira_or_branch_ref
 from projects import get_project_id
 from todoist.api import TodoistAPI
 
@@ -15,9 +15,9 @@ api = TodoistAPI(api_token)
 api.sync()
 
 def main(subtasks_path):
-    project_id = get_project_id(api, "DCF: General")
-    jira_ref = ui_get_jira_reference()
-    root_task_id = ui_create_root_task(api, project_id, jira_ref, extra_labels=["support"])
+    project_id = get_project_id(api, "General/Ad-hoc")
+    jira_ref = ui_get_jira_or_branch_ref()
+    root_task_id = ui_create_root_dev_task(api, project_id, jira_ref, extra_labels=["support"])
     create_subtask(api, "Investigate or reproduce the issue", project_id, root_task_id)
     create_subtask(api, "Determine the cause of the issue", project_id, root_task_id)
     create_subtask(api, "Fix the issue or create new task", project_id, root_task_id)

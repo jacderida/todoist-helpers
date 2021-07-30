@@ -13,7 +13,7 @@ from dev.tasks import create_jira_admin_task
 from dev.tasks import create_merge_subtask
 from dev.tasks import create_subtask
 from dev.tasks import create_subtasks_from_file
-from dev.ui import ui_create_root_task
+from dev.ui import ui_create_root_dev_task
 from dev.ui import ui_create_subtasks
 from dev.ui import ui_create_subtasks_from_file
 from dev.ui import ui_get_jira_reference
