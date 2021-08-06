@@ -32,6 +32,11 @@ def create_merge_subtask(api, project_id, root_task_id, branch, repo, target, te
     merge_subtask_id = merge_subtask["id"]
     create_subtask(
         api,
+        "Run `cargo clippy` on `{branch}`".format(branch=branch),
+        project_id,
+        merge_subtask_id)
+    create_subtask(
+        api,
         "Rebase `master` into `{branch}`".format(branch=branch),
         project_id,
         merge_subtask_id)
