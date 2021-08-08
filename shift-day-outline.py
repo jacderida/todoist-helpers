@@ -9,17 +9,6 @@ from datetime import datetime, timedelta
 from parse import parse
 from todoist.api import TodoistAPI
 
-from dev.tasks import create_jira_admin_task
-from dev.tasks import create_merge_subtask
-from dev.tasks import create_subtask
-from dev.tasks import create_subtasks_from_file
-from dev.ui import ui_create_root_dev_task
-from dev.ui import ui_create_subtasks
-from dev.ui import ui_create_subtasks_from_file
-from dev.ui import ui_get_jira_reference
-from dev.ui import ui_get_main_repo
-from projects import ui_select_work_project
-
 DAY_OUTLINE_PROJECT_ID = 2235770611
 Task = namedtuple('Task', ['id', 'name', 'due'])
 

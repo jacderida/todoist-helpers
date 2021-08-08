@@ -15,7 +15,7 @@ from dev.ui import ui_get_jira_reference
 
 from todoist.api import TodoistAPI
 from labels import get_label_ids
-from projects import ui_select_work_project
+from projects import ui_select_project
 
 api_token = os.getenv('TODOIST_API_TOKEN')
 api = TodoistAPI(api_token)
@@ -81,7 +81,7 @@ def create_main_repo_subtasks(project_id, root_task_id, jira_ref, modules):
     create_terraform_merge_subtask(api, project_id, root_task_id, jira_ref, "master")
 
 def main():
-    project_id = ui_select_work_project(api)[1]
+    project_id = ui_select_project(api)[1]
     jira_ref = ui_get_jira_reference()
     root_id = ui_create_root_dev_task(api, project_id, jira_ref, ["terraform"])
     ui_create_subtasks(
