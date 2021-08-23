@@ -15,6 +15,7 @@ WORK_REPOS = [
     "qp2p",
     "safe_network",
     "self_update",
+    "sn_api",
     "sn_authd",
     "sn_cli",
     "sn_testnet_tool"
