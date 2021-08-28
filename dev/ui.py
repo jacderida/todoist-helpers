@@ -23,7 +23,8 @@ WORK_REPOS = [
 
 PERSONAL_REPOS = [
     "tdl-rs",
-    "todoist-helpers"
+    "todoist-helpers",
+    "vagrant-boxes"
 ]
 
 def ui_get_jira_or_branch_ref():
