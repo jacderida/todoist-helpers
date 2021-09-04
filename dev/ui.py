@@ -22,9 +22,11 @@ WORK_REPOS = [
 ]
 
 PERSONAL_REPOS = [
+    "dotfiles",
     "tdl-rs",
     "todoist-helpers",
-    "vagrant-boxes"
+    "vagrant-boxes",
+    "xwadtools"
 ]
 
 def ui_get_jira_or_branch_ref():
