@@ -3,6 +3,7 @@
 import getopt
 import os
 import sys
+import time
 
 from dev.tasks import DevTaskType
 from dev.tasks import DevWorkType
@@ -30,7 +31,8 @@ def main(subtasks_path, task_type, work_type):
         repos = ui_get_main_repo(work_type)
     root_task_id = ui_create_root_dev_task(api, project_id, branch_ref, task_type, work_type, repos)
     if subtasks_path:
-        ui_create_subtasks_from_file(api, subtasks_path, project_id, root_task_id, task_type, work_type)
+        ui_create_subtasks_from_file(
+            api, subtasks_path, root_task_id, project_id, task_type, work_type)
     else:
         ui_create_subtasks(
             api,

@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from parse import parse
 from todoist.api import TodoistAPI
 
-DAY_OUTLINE_PROJECT_ID = 2235770611
+DAY_OUTLINE_PROJECT_ID = 2273502842
 Task = namedtuple('Task', ['id', 'name', 'due'])
 
 api_token = os.getenv('TODOIST_API_TOKEN')
