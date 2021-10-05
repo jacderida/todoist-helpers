@@ -31,8 +31,23 @@ PERSONAL_REPOS = [
 
 def ui_get_jira_or_branch_ref():
     print_heading("JIRA/Branch Reference")
-    print("Please supply the JIRA ticket or branch name for the work")
-    jira_ref = input(">> ")
+    jira_ref = ""
+    has_uppercase_chars = True
+    has_spaces = True
+    while has_uppercase_chars or has_spaces:
+        print("Please supply the JIRA ticket or branch name for the work")
+        jira_ref = input(">> ")
+        for c in jira_ref:
+            if c.isupper():
+                print("Error: the branch name must be all lower case")
+                has_uppercase_chars = True
+                break
+            has_uppercase_chars = False
+        if " " in jira_ref:
+            print("Error: the branch name cannot contain spaces")
+            has_spaces = True
+        else:
+            has_spaces = False
     print()
     return jira_ref
 

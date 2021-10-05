@@ -3,7 +3,6 @@
 import getopt
 import os
 import sys
-import time
 
 from dev.tasks import DevTaskType
 from dev.tasks import DevWorkType
