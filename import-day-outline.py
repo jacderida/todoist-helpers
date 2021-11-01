@@ -21,8 +21,8 @@ from datetime import datetime, timedelta
 
 from todoist.api import TodoistAPI
 
-from labels import get_label_ids
-from projects import get_project_id
+from lib.labels import get_label_ids
+from lib.projects import get_project_id
 
 api_token = os.getenv("TODOIST_API_TOKEN")
 api = TodoistAPI(api_token)

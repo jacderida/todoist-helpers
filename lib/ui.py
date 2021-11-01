@@ -6,13 +6,14 @@ from .tasks import create_parent_task
 from .tasks import create_subtask
 from .tasks import create_subtasks_from_file
 from .tasks import create_branch_subtask
-from projects import get_valid_project_selection
+from .projects import get_valid_project_selection
 
 WORK_PARENT_PROJECT_ID = 2235604758
 PERSONAL_PARENT_PROJECT_ID = 2181705102
 
 WORK_REPOS = [
     "qp2p",
+    "rust-version-bump-branch-creator",
     "safe_network",
     "self_update",
     "sn_api",
@@ -161,4 +162,3 @@ def get_repos(work_type):
     elif work_type == DevWorkType.PERSONAL:
         repos = PERSONAL_REPOS
     return repos
-

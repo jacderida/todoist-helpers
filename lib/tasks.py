@@ -1,5 +1,5 @@
 from enum import auto, Enum
-from labels import get_label_ids
+from .labels import get_label_ids
 
 class DevTaskType(Enum):
     ADMIN = auto()
