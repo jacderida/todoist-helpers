@@ -23,10 +23,10 @@ api.sync()
 def main(subtasks_path, task_type, work_type):
     project_id = ui_select_project(api, work_type)[1]
     branch_ref = ""
-    if task_type != DevTaskType.NON_CODE:
+    if task_type != DevTaskType.NON_MERGE:
         branch_ref = ui_get_jira_or_branch_ref()
     repos = []
-    if task_type != DevTaskType.NON_CODE:
+    if task_type != DevTaskType.NON_MERGE:
         repos = ui_get_main_repo(work_type)
     root_task_id = ui_create_root_dev_task(api, project_id, branch_ref, task_type, work_type, repos)
     if subtasks_path:
