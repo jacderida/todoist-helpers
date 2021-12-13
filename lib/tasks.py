@@ -3,6 +3,7 @@ from .labels import get_label_ids
 
 class DevTaskType(Enum):
     ADMIN = auto()
+    INVESTIGATION = auto()
     NON_MERGE = auto()
     TERRAFORM = auto()
     RUST = auto()
@@ -137,6 +138,7 @@ def get_labels_for_task(task_type, work_type, extra_labels):
         labels.append("home")
     if task_type == DevTaskType.ADMIN:
         labels.append("admin")
-    else:
-        labels.append("development")
+    if task_type == DevTaskType.INVESTIGATION:
+        labels.append("investigation")
+    labels.append("development")
     return labels + extra_labels

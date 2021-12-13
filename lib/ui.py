@@ -91,6 +91,16 @@ def ui_create_root_dev_admin_task(api, project_id, work_type, extra_labels=[]):
     print()
     return root_task_id
 
+def ui_create_root_dev_investigation_task(api, project_id, work_type, extra_labels=[]):
+    print_heading("Define Dev Investigation Task")
+    print("Use a name that describes the investigation to carry out")
+    task_name = input(">> ")
+    root_task = create_parent_task(
+        api, task_name, project_id, DevTaskType.INVESTIGATION, work_type, extra_labels=extra_labels)
+    root_task_id = root_task["id"]
+    print()
+    return root_task_id
+
 def ui_get_whitelist_entries_to_create():
     whitelist_entries = []
     print_heading("Create New Whitelist Task")
