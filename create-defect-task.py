@@ -4,16 +4,16 @@ import getopt
 import os
 import sys
 
-from dev.tasks import DevTaskType
-from dev.tasks import DevWorkType
-from dev.tasks import create_jira_admin_task
-from dev.tasks import create_subtask
-from dev.tasks import create_subtasks_from_file
-from dev.ui import ui_create_root_dev_task
-from dev.ui import ui_get_jira_or_branch_ref
-from dev.ui import ui_select_project
+from lib.tasks import DevTaskType
+from lib.tasks import DevWorkType
+from lib.tasks import create_jira_admin_task
+from lib.tasks import create_subtask
+from lib.tasks import create_subtasks_from_file
+from lib.ui import ui_create_root_dev_task
+from lib.ui import ui_get_jira_or_branch_ref
+from lib.ui import ui_select_project
 from todoist.api import TodoistAPI
-from projects import get_project_id
+from lib.projects import get_project_id
 
 api_token = os.getenv('TODOIST_API_TOKEN')
 api = TodoistAPI(api_token)
