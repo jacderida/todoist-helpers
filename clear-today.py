@@ -1,5 +1,24 @@
 #!/usr/bin/env python
 
+"""
+This script can be used in two different ways.
+
+If using it late in the day, e.g., at 2330, run:
+./clear-today.py
+
+This will clear all work, personal and routine tasks that weren't completed and are either overdue
+or due today. For daily routine tasks, Todoist will set their due date to tomorrow. Any non-routine
+tasks need their new date assigned as part of a planning session; they aren't simply carried over.
+
+If using it in the early hours of the morning, e.g., at 0130, run:
+./clear-today.py --today
+
+This has the same result as above, except it explicitly sets the due date of daily routine tasks to
+today. If left to Todoist, it would set the due date to tomorrow, i.e., the next calendar day, which
+probably isn't desired. Use the `--today` flag if you want to address the routine tasks in the
+current calendar day when you're next awake.
+"""
+
 import os
 import sys
 from datetime import datetime
@@ -10,7 +29,12 @@ ACTIVE_PERSONAL_PROJECTS_ID = 2181705102 # ID of parent project for all personal
 ACTIVE_WORK_PROJECTS_ID = 2235604758 # ID of parent project for all work projects
 ROUTINE_PROJECTS_ID = 2235762094 # ID of parent project for all routine projects
 DAY_OUTLINE_PROJECT_ID = 2279298884
-HOUSEWORK_PROJECT_ID = 2231549968
+
+def parse_due_date(due_date):
+    try:
+        return datetime.strptime(due_date, '%Y-%m-%dT%H:%M:%S')
+    except ValueError:
+        return datetime.strptime(due_date, '%Y-%m-%d')
 
 def get_due_or_overdue_tasks(api, parent_id):
     active_work_project_ids = [
@@ -26,31 +50,31 @@ def clear_due_dates(api, tasks, use_today=False):
     """
     The intention here is to clear the due dates from any overdue tasks or those due today.
 
-    The 'due' field on the item isn't just a date string, it also contains information about
-    the recurrence frequency for recurring tasks, e.g. "every workday". Setting the 'date'
-    field of the due date to None has the effect of clearing out the date, but the recurrence
-    information will be retained. If for example the task was setup with an "every day"
-    recurrence, clearing the 'date' field means the task will now be due tomorrow.
+    The `due` key on `item` isn't just a date string: it's a dictionary containing the due date
+    and any recurrence info, e.g., "every workday". Setting the `date` key to `None` will clear
+    *this* occurrence, but any recurrence info will be retained. If, for example, the task has an
+    "every day" recurrence, clearing the date means the task is now due tomorrow.
 
-    If you're clearing out yesterday's tasks in the early hours of the morning, it may be desirable
-    to have the routine tasks set with today's date, so you can do them during the current day when
-    you next wake up. In this case, the `--today` flag will be used and 'use_today' will be set to
-    true.
+    If we're clearing out yesterday's tasks in the early hours of the morning, we may want the
+    routine tasks set with today's date, so you can do them during the current day when you next
+    wake up. In this case, use the `--today` flag and 'use_today' will be `true`.
 
-    Finally, any housework tasks are excluded from being cleared, since these don't occur on daily
-    intervals, so you generally don't want to reset these tasks to the current day. If the `--today`
-    flag hasn't been used they'll be cleared out anyway. The reason for this check is because the
-    housework project is under the routine parent project and I still want to keep it there, but it
-    needs to be treated slightly differently from the daily routine projects.
+    Another note on `--today`: when used, only tasks that recurr every day, or every work day, will
+    have their due date explicitly set to today. Otherwise we'll let Todoist take care of setting
+    the next due date, which may not happen to be today.
     """
     for task in tasks:
-        if task['project_id'] == HOUSEWORK_PROJECT_ID and use_today:
-            continue
-        print('Clearing current due date on "{}" if applicable'.format(task['content']))
         item = api.items.get_by_id(task['id'])
         due = item['due']
-        due['date'] = datetime.strftime(datetime.now(), "%Y-%m-%d") if use_today else None
-        item.update(due=due)
+        due_date = parse_due_date(due['date'])
+        if due_date < datetime.now():
+            if use_today and due['string'] in ['every day', 'every work day']:
+                print('Clearing current due date on "{}"'.format(task['content']))
+                due['date'] = datetime.strftime(datetime.now(), "%Y-%m-%d")
+            else:
+                print('Clearing current due date on "{}"'.format(task['content']))
+                due['date'] = None
+            item.update(due=due)
     api.commit()
 
 def delete_day_outline_tasks(api):
@@ -75,8 +99,8 @@ def main(use_today):
     clear_due_dates(api, work_tasks)
     print()
     print("Clearing any personal tasks...")
-    work_tasks = get_due_or_overdue_tasks(api, ACTIVE_PERSONAL_PROJECTS_ID)
-    clear_due_dates(api, work_tasks)
+    personal_tasks = get_due_or_overdue_tasks(api, ACTIVE_PERSONAL_PROJECTS_ID)
+    clear_due_dates(api, personal_tasks)
     print()
     print("Clearing any routine tasks...")
     routine_tasks = get_due_or_overdue_tasks(api, ROUTINE_PROJECTS_ID)
