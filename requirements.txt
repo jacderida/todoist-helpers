@@ -1,4 +1,7 @@
-todoist-python
-parse
 azure-cli
 httpie
+parse
+PyGithub
+questionary
+rich
+todoist-python

@@ -1,5 +1,8 @@
 import sys
 
+def get_label_id(api, name):
+    return get_label_ids(api, [name])[0]
+
 def get_label_ids(api, labels):
     label_ids = []
     for label in labels:

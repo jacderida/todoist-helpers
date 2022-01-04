@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 from .tasks import DevTaskType
 from .tasks import DevWorkType
@@ -8,8 +9,11 @@ from .tasks import create_subtasks_from_file
 from .tasks import create_branch_subtask
 from .projects import get_valid_project_selection
 
-WORK_PARENT_PROJECT_ID = 2235604758
+import questionary
+
+DEV_DIR_NAME = 'dev'
 PERSONAL_PARENT_PROJECT_ID = 2181705102
+WORK_PARENT_PROJECT_ID = 2235604758
 
 WORK_REPOS = [
     "qp2p",
@@ -29,6 +33,19 @@ PERSONAL_REPOS = [
     "vagrant-boxes",
     "xwadtools"
 ]
+
+def ui_select_repository(header_text):
+    print_heading(header_text)
+    dev_path = Path.home().joinpath(DEV_DIR_NAME)
+    sites = sorted(os.listdir(dev_path))
+    site = questionary.select('Please select the site', choices=sites).ask()
+    site_path = dev_path.joinpath(site)
+    owners = sorted(os.listdir(site_path))
+    owner = questionary.select('Please select the owner', choices=owners).ask()
+    owner_path = site_path.joinpath(owner)
+    repositories = sorted(os.listdir(owner_path))
+    repo = questionary.select('Please select the repository', choices=repositories).ask()
+    return (owner, owner_path.joinpath(repo))
 
 def ui_get_jira_or_branch_ref():
     print_heading("JIRA/Branch Reference")
