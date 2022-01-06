@@ -13,25 +13,30 @@ from lib.ui import ui_create_root_dev_investigation_task
 from lib.ui import ui_select_project
 from todoist.api import TodoistAPI
 
-api_token = os.getenv('TODOIST_API_TOKEN')
-api = TodoistAPI(api_token)
-api.sync()
+import questionary
+from rich.console import Console
+
+console = Console()
 
 def main(subtasks_path, work_type):
-    project_id = ui_select_project(api, work_type)[1]
+    with console.status('[bold green]Initial Todoist API sync...') as _:
+        api_token = os.getenv('TODOIST_API_TOKEN')
+        api = TodoistAPI(api_token)
+        api.sync()
+    (project_id, _) = ui_select_project(api, work_type)
     root_task_id = ui_create_root_dev_investigation_task(api, project_id, work_type)
     if subtasks_path:
         ui_create_subtasks_from_file(
             api, subtasks_path, root_task_id, project_id, DevTaskType.INVESTIGATION, work_type)
     else:
-        ui_create_subtasks(
-            api,
-            root_task_id,
-            project_id,
-            "Define Subtasks for Work",
-            "Create any subtasks for this work",
-            DevTaskType.INVESTIGATION,
-            work_type)
+        create_subtasks = questionary.confirm('Would you like to create any subtasks').ask()
+        if create_subtasks:
+            ui_create_subtasks(
+                api,
+                root_task_id,
+                project_id,
+                DevTaskType.INVESTIGATION,
+                work_type)
     if os.getenv('JIRA_BASE_URL'):
         create_jira_admin_task(api, project_id, root_task_id, "")
 

@@ -7,32 +7,34 @@ from .tasks import create_parent_task
 from .tasks import create_subtask
 from .tasks import create_subtasks_from_file
 from .tasks import create_branch_subtask
-from .projects import get_valid_project_selection
 
 import questionary
+from questionary import Validator, ValidationError
+from rich.console import Console
+
+console = Console()
 
 DEV_DIR_NAME = 'dev'
 PERSONAL_PARENT_PROJECT_ID = 2181705102
 WORK_PARENT_PROJECT_ID = 2235604758
 
-WORK_REPOS = [
-    "qp2p",
-    "rust-version-bump-branch-creator",
-    "safe_network",
-    "self_update",
-    "sn_api",
-    "sn_authd",
-    "sn_cli",
-    "sn_testnet_tool"
-]
-
-PERSONAL_REPOS = [
-    "dotfiles",
-    "tdl-rs",
-    "todoist-helpers",
-    "vagrant-boxes",
-    "xwadtools"
-]
+class JiraBranchRefValidator(Validator):
+    def validate(self, document):
+        if ' ' in document.text:
+            raise ValidationError(
+                message='The JIRA/branch reference cannot contain spaces',
+                cursor_position=len(document.text)
+            )
+        if any([c.isupper() for c in document.text]):
+            raise ValidationError(
+                message='The JIRA/branch reference must be all lower case',
+                cursor_position=len(document.text)
+            )
+        if len(document.text) == 0:
+            raise ValidationError(
+                message='A value must be provided for the JIRA/branch reference',
+                cursor_position=len(document.text)
+            )
 
 def ui_select_repository(header_text):
     print_heading(header_text)
@@ -45,76 +47,61 @@ def ui_select_repository(header_text):
     owner_path = site_path.joinpath(owner)
     repositories = sorted(os.listdir(owner_path))
     repo = questionary.select('Please select the repository', choices=repositories).ask()
-    return (owner, owner_path.joinpath(repo))
+    return (owner, repo, owner_path.joinpath(repo))
 
 def ui_get_jira_or_branch_ref():
-    print_heading("JIRA/Branch Reference")
-    jira_ref = ""
-    has_uppercase_chars = True
-    has_spaces = True
-    while has_uppercase_chars or has_spaces:
-        print("Please supply the JIRA ticket or branch name for the work")
-        jira_ref = input(">> ")
-        for c in jira_ref:
-            if c.isupper():
-                print("Error: the branch name must be all lower case")
-                has_uppercase_chars = True
-                break
-            has_uppercase_chars = False
-        if " " in jira_ref:
-            print("Error: the branch name cannot contain spaces")
-            has_spaces = True
-        else:
-            has_spaces = False
-    print()
+    jira_ref = questionary.text(
+        'Please supply the JIRA or branch reference:', validate=JiraBranchRefValidator
+    ).ask()
     return jira_ref
 
-def ui_create_subtasks(api, root_task_id, project_id, heading, subheading, task_type, work_type):
-    print_heading(heading)
-    print(subheading)
+def ui_create_subtasks(api, root_task_id, project_id, task_type, work_type):
     while True:
-        print("Please enter the name of the subtask to add")
-        print("Enter 'quit' to stop adding subtasks")
-        name = input(">> ")
-        if name == "quit":
+        name = questionary.text(
+            "Please enter the name of the subtask to add (or use 'quit' to stop):",
+            validate=lambda name: True if len(name) > 0 else 'The subtask must have a name'
+        ).ask()
+        if name == 'quit':
             break
         create_subtask(api, name, project_id, task_type, work_type, root_task_id)
     print()
 
 def ui_create_root_dev_task(
-        api, project_id, branch_ref, task_type, work_type, repos=[], extra_labels=[]):
-    print_heading("Main Task Name")
-    print("Use a name that reflects the outcome of the work")
-    name = input(">> ")
+        api, project_id, branch_ref, task_type, work_type, repo='', extra_labels=[]):
+    name = questionary.text(
+        'Provide a name for the development task:',
+        validate=lambda answer: True if len(answer) > 0 else 'A name for the task must be provided'
+    ).ask()
     task_name = name
-    jira_url = os.getenv("JIRA_BASE_URL")
+    jira_url = os.getenv('JIRA_BASE_URL')
     if jira_url:
-        task_name = "[{jira_ref}]({jira_url}/{jira_ref}): {name}".format(
-            jira_ref=branch_ref, jira_url=jira_url, name=name),
-    root_task = create_parent_task(api, task_name, project_id, task_type, work_type, extra_labels=extra_labels)
+        task_name = f'[{branch_ref}]({jira_url}/{branch_ref}): {name}'
+    root_task = create_parent_task(
+        api, task_name, project_id, task_type, work_type, extra_labels=extra_labels)
     root_task_id = root_task["id"]
-    for repo in repos:
+    if repo:
         create_branch_subtask(api, project_id, root_task_id, task_name, work_type, repo, branch_ref)
     print()
     return root_task_id
 
 def ui_create_root_dev_admin_task(api, project_id, work_type, extra_labels=[]):
-    print_heading("Main Task Name")
-    print("Use a name that reflects the outcome of the work")
-    task_name = input(">> ")
+    task_name = questionary.text(
+        'Provide a name for the development task:',
+        validate=lambda answer: True if len(answer) > 0 else 'A name for the task must be provided'
+    ).ask()
     root_task = create_parent_task(
         api, task_name, project_id, DevTaskType.ADMIN, work_type, extra_labels=extra_labels)
-    root_task_id = root_task["id"]
-    print()
+    root_task_id = root_task['id']
     return root_task_id
 
 def ui_create_root_dev_investigation_task(api, project_id, work_type, extra_labels=[]):
-    print_heading("Define Dev Investigation Task")
-    print("Use a name that describes the investigation to carry out")
-    task_name = input(">> ")
+    task_name = questionary.text(
+        'Provide a name for the investigation to carry out:',
+        validate=lambda answer: True if len(answer) > 0 else 'A name for the task must be provided'
+    ).ask()
     root_task = create_parent_task(
         api, task_name, project_id, DevTaskType.INVESTIGATION, work_type, extra_labels=extra_labels)
-    root_task_id = root_task["id"]
+    root_task_id = root_task['id']
     print()
     return root_task_id
 
@@ -133,24 +120,6 @@ def ui_get_whitelist_entries_to_create():
     print()
     return whitelist_entries
 
-def ui_get_main_repo(work_type):
-    print_heading("Main Repo")
-    print("The following repos are available:")
-    count = 1
-    repos = get_repos(work_type)
-    for repo in repos:
-        print("{num}. {name}".format(num=count, name=repo))
-        count += 1
-    print("Select the repositories for this work using a comma separated list")
-    selected = input(">> ")
-    print()
-    selected_repos = []
-    if "," in selected:
-        selected_repos = [repos[int(x) - 1] for x in selected.split(",")]
-    else:
-        selected_repos = [repos[int(selected) - 1]]
-    return selected_repos
-
 def ui_create_subtasks_from_file(api, subtasks_path, root_task_id, project_id, task_type, work_type):
     print_heading("Defining Subtasks from File")
     create_subtasks_from_file(api, subtasks_path, project_id, root_task_id, task_type, work_type)
@@ -161,31 +130,16 @@ def print_heading(heading):
     print("=" * (len(heading) + 4))
 
 def ui_select_project(api, work_type):
-    print_heading("Select Project")
-    print("Please select the project to work with: ")
-    parent_id = 0
     if work_type == DevWorkType.WORK:
         parent_id = WORK_PARENT_PROJECT_ID
     elif work_type == DevWorkType.PERSONAL:
         parent_id = PERSONAL_PARENT_PROJECT_ID
-    projects = {
-        p['name']:p['id']
-        for p in api.state['projects'] if p['parent_id'] == parent_id
-    }
-    count = 1
-    sorted_project_names = sorted(projects.keys())
-    for project in sorted_project_names:
-        print("{num}. {project_name}".format(num=count, project_name=project))
-        count += 1
-    selected_project_name = get_valid_project_selection(sorted_project_names)
-    print("Working with project {project}".format(project=selected_project_name))
-    print()
-    return (selected_project_name, projects[selected_project_name])
-
-def get_repos(work_type):
-    repos = []
-    if work_type == DevWorkType.WORK:
-        repos = WORK_REPOS
-    elif work_type == DevWorkType.PERSONAL:
-        repos = PERSONAL_REPOS
-    return repos
+    else:
+        raise ValueError(
+            'work_type must use the DevWorkType enum and its value should be either WORK or PERSONAL')
+    projects = [
+        (p['id'], p['name']) for p in api.state['projects'] if p['parent_id'] == parent_id
+    ]
+    choice = questionary.select(
+        'Please select the project for the task', choices=sorted([p[1] for p in projects])).ask()
+    return next((p for p in projects if p[1] == choice))

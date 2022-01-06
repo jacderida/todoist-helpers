@@ -17,13 +17,12 @@ console = Console()
 
 def select_dev_task(tasks):
     choice = questionary.select(
-        'Please select the dev task to submit for PR',
-        choices=[t.name for t in tasks if t.due_info]
+        'Please select the dev task to submit for PR', choices=[t.name for t in tasks if t.due_info]
     ).ask()
     return next((t for t in tasks if t.name == choice))
 
-def process_merge_checklist(api, console, merge_tasks):
-    choices = [{'name': t.name} for t in merge_tasks]
+def process_pr_checklist(api, console, pr_tasks):
+    choices = [{'name': t.name} for t in pr_tasks]
     questionary.checkbox(
         'Complete the merge checklist',
         choices=choices,
@@ -32,7 +31,7 @@ def process_merge_checklist(api, console, merge_tasks):
         )
     ).ask()
     with console.status('[bold green]Completing checklist items on Todoist...') as _:
-        for task in merge_tasks:
+        for task in pr_tasks:
             console.print("Marking '{}' as complete".format(task.name))
             task.complete(api)
 
@@ -71,9 +70,7 @@ def get_pr_title(body):
     return title
 
 def submit_pr(source_owner, title, body, head_branch):
-    (owner, repo_path) = ui_select_repository('Select Target Repository')
-    parts = str(repo_path).split('/')
-    repo = parts[len(parts) - 1]
+    (owner, repo, _) = ui_select_repository('Select Target Repository')
     head = f'{source_owner}:{head_branch}' if source_owner != owner else head_branch
 
     url = f'https://github.com/{owner}/{repo}/pull'
@@ -87,7 +84,7 @@ def submit_pr(source_owner, title, body, head_branch):
     return url
 
 def create_pr():
-    (source_owner, repo_path) = ui_select_repository('Select Source Repository')
+    (source_owner, _, repo_path) = ui_select_repository('Select Source Repository')
     print(f'selected repository at {repo_path}')
     body = get_pr_body(repo_path)
     title = get_pr_title(body)
@@ -103,29 +100,23 @@ def main():
     with console.status('[bold green]Getting outstanding development tasks...') as _:
         dev_tasks = get_outstanding_dev_tasks(api, DevWorkType.WORK)
     task = select_dev_task(dev_tasks)
-    if len(task.subtasks) > 1:
+    if len(task.subtasks) > 3:
         console.print(
-            '[bold red]Error:[/bold red] A task is only eligible for merge ' \
-            'if all subtasks (except the merge task) are cleared.'
+            '[bold red]Error:[/bold red] A task is only eligible for PR ' \
+            'if all subtasks (except the PR/merge tasks) are cleared.'
         )
         console.print(
             '[bold green]Suggestion:[/bold green] Clear all the non-merge subtasks first.'
         )
         return 1;
-    merge_subtask = task.subtasks[0]
-    if not merge_subtask.name.startswith('Merge'):
-        console.print(
-            "[bold red]Error:[/bold red] The selected task has a remaining subtask, " \
-            "but it's not a merge task."
-        )
-        console.print(
-            '[bold green]Suggestion:[/bold green] Select a mergeable task to work with.'
-        )
-        return 1
-    process_merge_checklist(api, console, merge_subtask.subtasks)
+    pr_checklist = task.subtasks[0]
+    process_pr_checklist(api, console, pr_checklist.subtasks)
     url = create_pr()
-    with console.status('[bold green]Updating development task...') as _:
+    with console.status("[bold green]Marking development task as 'waiting'...") as _:
         task.mark_waiting(api, f'PR submitted, now waiting for review. PR is available at: {url}')
+    submit_pr_task = task.subtasks[1]
+    with console.status('[bold green]Completing submit PR task...') as _:
+        submit_pr_task.complete(api)
 
 if __name__ == '__main__':
     sys.exit(main())
