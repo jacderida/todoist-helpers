@@ -45,7 +45,9 @@ def main():
         create_item_to_buy(api, f"{author} - '{title}'", ["buy", "books"], link, notes)
     elif item_type == "film":
         title = questionary.text("Title?").ask()
-        media_type = questionary.select("Type?", choices=["Blu-ray", "DVD"]).ask()
+        media_type = questionary.select(
+            "Type?", choices=["Blu-ray", "Digital", "DVD"]
+        ).ask()
         year = questionary.text("Year?").ask()
         notes = questionary.text("Notes?").ask()
         create_item_to_buy(
