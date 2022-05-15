@@ -48,10 +48,14 @@ def main():
         media_type = questionary.select(
             "Type?", choices=["Blu-ray", "Digital", "DVD"]
         ).ask()
-        year = questionary.text("Year?").ask()
+        if media_type == "Blu-ray":
+            sub_type = questionary.select(
+                "Blu-ray type?", choices=["1080p", "4k"]
+            ).ask()
+            media_type += f" {sub_type}"
         notes = questionary.text("Notes?").ask()
         create_item_to_buy(
-            api, f"'{title}' ({media_type}, {year})", ["buy", "films"], link, notes
+            api, f"'{title}' ({media_type})", ["buy", "films"], link, notes
         )
     return 0
 
