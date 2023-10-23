@@ -5,14 +5,13 @@ import sys
 
 import questionary
 from rich.console import Console
-from todoist.api import TodoistAPI
+from todoist_api_python.api import TodoistAPI
 
 from lib.tasks import create_task
 
 BUY_PROJECT_ID = 2228704164
 
 console = Console()
-
 
 def create_item_to_buy(api, content, labels, link, notes):
     task = create_task(
@@ -27,15 +26,14 @@ def create_item_to_buy(api, content, labels, link, notes):
         False,
     )
     if notes:
-        api.notes.add(task["id"], notes)
-        api.commit()
+        api.add_comment(task_id=task["id"], content=notes)
 
 
 def main():
     api_token = os.getenv("TODOIST_API_TOKEN")
-    with console.status("[bold green]Initial Todoist API sync...") as _:
-        api = TodoistAPI(api_token)
-        api.sync()
+    if not api_token:
+        raise Exception("The TODOIST_API_TOKEN environment variable must be set")
+    api = TodoistAPI(api_token)
     link = questionary.text("Link?").ask()
     item_type = questionary.select("Type?", choices=["book", "film"]).ask()
     if item_type == "book":

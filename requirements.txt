@@ -4,4 +4,4 @@ parse
 PyGithub
 questionary
 rich
-todoist-python
+todoist-api-python

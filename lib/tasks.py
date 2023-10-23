@@ -1,5 +1,5 @@
 from enum import auto, Enum
-from .labels import get_label_ids, get_label_id
+from .labels import get_full_label_names, get_full_label_name
 
 from rich.console import Console
 
@@ -32,7 +32,7 @@ class Task:
 
     def mark_waiting(self, api, comment):
         item = api.items.get_by_id(self.id)
-        self.labels.append(get_label_id(api, "waiting"))
+        self.labels.append(get_full_label_name(api, "waiting"))
         item.update(labels=self.labels)
         api.notes.add(self.id, comment)
         api.commit()
@@ -67,7 +67,7 @@ def get_outstanding_dev_tasks(api, work_type):
         for p in api.state["projects"]
         if p["parent_id"] == parent_id
     ]
-    label_id = get_label_id(api, "development")
+    label_id = get_full_label_name(api, "development")
     tasks = []
     for (project_id, project_name) in project_info:
         project_data = api.projects.get_data(project_id)
@@ -265,24 +265,22 @@ def create_task(
         due = None
         if apply_date:
             due = None if parent_id else {"string": "Today"}
-        task = api.items.add(
-            content,
+        task = api.add_task(
+            content=content,
             project_id=project_id,
             parent_id=parent_id,
-            due=due,
-            labels=get_label_ids(
+            due_string=due,
+            labels=get_full_label_names(
                 api, get_labels_for_task(task_type, work_type, extra_labels)
             ),
         )
-        api.commit()
         if parent_id:
-            print("Created subtask '{name}'".format(name=task["content"]))
+            print("Created subtask '{name}'".format(name=task.content))
         else:
-            print("Created task '{name}'".format(name=task["content"]))
+            print("Created task '{name}'".format(name=task.content))
     if comment:
-        api.notes.add(task["id"], comment)
-        api.commit()
-        print("Added comment to '{name}'".format(name=task["content"]))
+        api.add_comment(task_id=task.id, content=comment)
+        print("Added comment to '{name}'".format(name=task.content))
     return task
 
 

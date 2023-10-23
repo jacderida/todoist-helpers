@@ -1,16 +1,17 @@
 import sys
 
-def get_label_id(api, name):
-    return get_label_ids(api, [name])[0]
+def get_full_label_name(api, name):
+    return get_full_label_names(api, [name])[0]
 
-def get_label_ids(api, labels):
-    label_ids = []
-    for label in labels:
+def get_full_label_names(api, label_names):
+    retrieved_labels = api.get_labels()
+    full_label_names = []
+    for label in label_names:
         try:
-            retrieved_label = next(x for x in api.state['labels'] if label in x['name'])
-            label_ids.append(retrieved_label['id'])
+            label_name = next(x.name for x in retrieved_labels if label in x.name)
+            full_label_names.append(label_name)
         except StopIteration:
             print("Label '{label}' doesn't exist. Please respecify with a valid label.".format(
                 label=label))
             sys.exit(1)
-    return label_ids
+    return full_label_names
