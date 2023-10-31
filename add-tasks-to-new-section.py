@@ -4,18 +4,17 @@ import ast
 import os
 import sys
 
-from todoist.api import TodoistAPI
-from lib.labels import get_label_ids
-from lib.projects import ui_select_project
+from todoist_api_python.api import TodoistAPI
+from lib.labels import get_full_label_names
+from lib.ui import ui_select_project, ui_select_work_type
 
-api_token = os.getenv("TODOIST_API_TOKEN")
-api = TodoistAPI(api_token)
-api.sync()
 
-def create_section(project_id):
+def create_section(project, api):
     section_name = input("Please enter the name of the section to add:\n")
-    section = api.sections.add(section_name, project_id=project_id)
+    section = api.add_section(name=section_name, project_id=project[0])
+    print(f"Added {section.name} section to {project[1]} project")
     return section
+
 
 def parse_line(line):
     split = line.strip().split(";")
@@ -25,29 +24,30 @@ def parse_line(line):
     task_name = task_name[1:].strip() # remove leading '* ' or '- ' from task name
     return (task_name, [l.strip() for l in labels], is_sub_task)
 
-def add_tasks_from_file(path, project, section):
-    print("Adding {section} section to {project} project".format(
-        section=section["name"], project=project[0]))
+
+def add_tasks_from_file(api, path, project, section):
     with open(path) as f:
         parent_id = None
         for line in f.readlines():
             task_name, labels, is_sub_task = parse_line(line)
-            label_ids = get_label_ids(api, labels)
+            label_names = get_full_label_names(api, labels)
             if not is_sub_task:
-                print("Adding {task_name} task to {section} section".format(
-                    task_name=task_name, section=section["name"]))
-                item = api.items.add(
-                    task_name, project_id=project[1], section_id=section["id"], labels=label_ids)
-                parent_id = item["id"]
+                print(f"Adding '{task_name}' task to '{section.name}' section")
+                task = api.add_task(
+                    content=task_name,
+                    project_id=project[0],
+                    section_id=section.id,
+                    labels=label_names)
+                parent_id = task.id
             else:
-                print("Adding {task_name} subtask to {section} section".format(
-                    task_name=task_name, section=section["name"]))
-                api.items.add(
-                    task_name,
-                    project_id=project[1],
-                    section_id=section["id"],
-                    labels=label_ids,
+                print(f"Adding '{task_name}' subtask to '{section.name}' section")
+                api.add_task(
+                    content=task_name,
+                    project_id=project[0],
+                    section_id=section.id,
+                    labels=label_names,
                     parent_id=parent_id)
+
 
 def get_input_file_from_args():
     if len(sys.argv) < 2:
@@ -62,12 +62,20 @@ def get_input_file_from_args():
         sys.exit(1)
     return input_file_path
 
+
 def main():
+    api_token = os.getenv("TODOIST_API_TOKEN")
+    if not api_token:
+        raise Exception("The TODOIST_API_TOKEN environment variable must be set")
+    api = TodoistAPI(api_token)
+
     input_task_file_path = get_input_file_from_args()
-    project = ui_select_project(api)
-    section = create_section(project[1])
-    add_tasks_from_file(input_task_file_path, project, section)
-    api.commit()
+    work_type = ui_select_work_type()
+    project = ui_select_project(api, work_type)
+    section = create_section(project, api)
+    add_tasks_from_file(api, input_task_file_path, project, section)
+    return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())

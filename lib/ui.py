@@ -36,6 +36,7 @@ class JiraBranchRefValidator(Validator):
                 cursor_position=len(document.text)
             )
 
+
 def ui_select_repository(header_text):
     print_heading(header_text)
     dev_path = Path.home().joinpath(DEV_DIR_NAME)
@@ -49,11 +50,13 @@ def ui_select_repository(header_text):
     repo = questionary.select('Please select the repository', choices=repositories).ask()
     return (owner, repo, owner_path.joinpath(repo))
 
+
 def ui_get_jira_or_branch_ref():
     jira_ref = questionary.text(
         'Please supply the JIRA or branch reference:', validate=JiraBranchRefValidator
     ).ask()
     return jira_ref
+
 
 def ui_create_subtasks(api, root_task_id, project_id, task_type, work_type):
     while True:
@@ -65,6 +68,7 @@ def ui_create_subtasks(api, root_task_id, project_id, task_type, work_type):
             break
         create_subtask(api, name, project_id, task_type, work_type, root_task_id)
     print()
+
 
 def ui_create_root_dev_task(
         api, project_id, branch_ref, task_type, work_type, repo='', extra_labels=[]):
@@ -84,6 +88,7 @@ def ui_create_root_dev_task(
     print()
     return root_task_id
 
+
 def ui_create_root_dev_admin_task(api, project_id, work_type, extra_labels=[]):
     task_name = questionary.text(
         'Provide a name for the development task:',
@@ -93,6 +98,7 @@ def ui_create_root_dev_admin_task(api, project_id, work_type, extra_labels=[]):
         api, task_name, project_id, DevTaskType.ADMIN, work_type, extra_labels=extra_labels)
     root_task_id = root_task['id']
     return root_task_id
+
 
 def ui_create_root_dev_investigation_task(api, project_id, work_type, extra_labels=[]):
     task_name = questionary.text(
@@ -104,6 +110,7 @@ def ui_create_root_dev_investigation_task(api, project_id, work_type, extra_labe
     root_task_id = root_task['id']
     print()
     return root_task_id
+
 
 def ui_get_whitelist_entries_to_create():
     whitelist_entries = []
@@ -120,14 +127,17 @@ def ui_get_whitelist_entries_to_create():
     print()
     return whitelist_entries
 
+
 def ui_create_subtasks_from_file(api, subtasks_path, root_task_id, project_id, task_type, work_type):
     print_heading("Defining Subtasks from File")
     create_subtasks_from_file(api, subtasks_path, project_id, root_task_id, task_type, work_type)
+
 
 def print_heading(heading):
     print("=" * (len(heading) + 4))
     print("  {heading}  ".format(heading=heading))
     print("=" * (len(heading) + 4))
+
 
 def ui_select_project(api, work_type):
     if work_type == DevWorkType.WORK:
@@ -137,9 +147,20 @@ def ui_select_project(api, work_type):
     else:
         raise ValueError(
             'work_type must use the DevWorkType enum and its value should be either WORK or PERSONAL')
+    projects = api.get_projects()
+    projects_with_parents = [p for p in projects if p.parent_id]
     projects = [
-        (p['id'], p['name']) for p in api.state['projects'] if p['parent_id'] == parent_id
+        (p.id, p.name) for p in projects_with_parents if int(p.parent_id) == parent_id
     ]
     choice = questionary.select(
         'Please select the project for the task', choices=sorted([p[1] for p in projects])).ask()
     return next((p for p in projects if p[1] == choice))
+
+
+def ui_select_work_type():
+    choice = questionary.select(
+        "Choose a work type:",
+        choices=[DevWorkType.WORK.name, DevWorkType.PERSONAL.name]
+    ).ask()
+    selected_work_type = DevWorkType[choice]
+    return selected_work_type
