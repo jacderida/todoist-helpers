@@ -82,7 +82,7 @@ def ui_create_root_dev_task(
         task_name = f'[{branch_ref}]({jira_url}/{branch_ref}): {name}'
     root_task = create_parent_task(
         api, task_name, project_id, task_type, work_type, extra_labels=extra_labels)
-    root_task_id = root_task["id"]
+    root_task_id = root_task.id
     if repo:
         create_branch_subtask(api, project_id, root_task_id, task_name, work_type, repo, branch_ref)
     print()
@@ -96,7 +96,7 @@ def ui_create_root_dev_admin_task(api, project_id, work_type, extra_labels=[]):
     ).ask()
     root_task = create_parent_task(
         api, task_name, project_id, DevTaskType.ADMIN, work_type, extra_labels=extra_labels)
-    root_task_id = root_task['id']
+    root_task_id = root_task.id
     return root_task_id
 
 
@@ -107,7 +107,7 @@ def ui_create_root_dev_investigation_task(api, project_id, work_type, extra_labe
     ).ask()
     root_task = create_parent_task(
         api, task_name, project_id, DevTaskType.INVESTIGATION, work_type, extra_labels=extra_labels)
-    root_task_id = root_task['id']
+    root_task_id = root_task.id
     print()
     return root_task_id
 
@@ -147,7 +147,8 @@ def ui_select_project(api, work_type):
     else:
         raise ValueError(
             'work_type must use the DevWorkType enum and its value should be either WORK or PERSONAL')
-    projects = api.get_projects()
+    with console.status('[bold green]Fetching projects...') as _:
+        projects = api.get_projects()
     projects_with_parents = [p for p in projects if p.parent_id]
     projects = [
         (p.id, p.name) for p in projects_with_parents if int(p.parent_id) == parent_id

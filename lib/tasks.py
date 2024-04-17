@@ -118,14 +118,6 @@ def create_subtasks_from_file(
             )
 
 
-def create_terraform_merge_subtask(
-    api, project_id, root_task_id, branch, target, task_type, work_type
-):
-    create_merge_subtask(
-        api, project_id, root_task_id, branch, "terraform", target, task_type, work_type
-    )
-
-
 def create_branch_subtask(
     api, project_id, root_task_id, task_type, work_type, repo, branch
 ):
@@ -145,7 +137,7 @@ def create_pr_checklist_subtask(
     pr_checklist_subtask = create_subtask(
         api, "Perform PR checklist", project_id, task_type, work_type, root_task_id
     )
-    pr_checklist_subtask_id = pr_checklist_subtask["id"]
+    pr_checklist_subtask_id = pr_checklist_subtask.id
     if task_type == DevTaskType.RUST:
         create_subtask(
             api,
@@ -259,20 +251,20 @@ def create_task(
     parent_id=None,
     extra_labels=[],
     comment="",
-    apply_date=True,
+    apply_date=False,
 ):
     with console.status("[bold green]Creating task on Todoist...") as _:
         due = None
         if apply_date:
-            due = None if parent_id else {"string": "Today"}
+            due = None if parent_id else "Today"
         task = api.add_task(
             content=content,
-            project_id=project_id,
-            parent_id=parent_id,
             due_string=due,
             labels=get_full_label_names(
                 api, get_labels_for_task(task_type, work_type, extra_labels)
             ),
+            parent_id=parent_id,
+            project_id=project_id,
         )
         if parent_id:
             print("Created subtask '{name}'".format(name=task.content))
