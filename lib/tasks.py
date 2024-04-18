@@ -41,7 +41,7 @@ class Task:
 class DevTaskType(Enum):
     ADMIN = auto()
     INVESTIGATION = auto()
-    NON_MERGE = auto()
+    NON_CODE = auto()
     TERRAFORM = auto()
     RUST = auto()
     PYTHON = auto()

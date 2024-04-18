@@ -12,22 +12,16 @@ from lib.tasks import create_subtasks_from_file
 from lib.ui import ui_create_root_dev_task
 from lib.ui import ui_get_jira_or_branch_ref
 from lib.ui import ui_select_project
-from todoist.api import TodoistAPI
-from lib.projects import get_project_id
+from todoist_api_python.api import TodoistAPI
 
-api_token = os.getenv('TODOIST_API_TOKEN')
-api = TodoistAPI(api_token)
-api.sync()
+def main(subtasks_path, task_type, work_type):
+    api_token = os.getenv("TODOIST_API_TOKEN")
+    if not api_token:
+        raise Exception("The TODOIST_API_TOKEN environment variable must be set")
+    api = TodoistAPI(api_token)
 
-def main(subtasks_path, task_type, work_type, no_branch, project_name):
-    project_id = ""
-    if project_name:
-        project_id = get_project_id(api, project_name);
-    else:
-        project_id = ui_select_project(api, work_type)[1]
-    branch_ref = ""
-    if not no_branch:
-        branch_ref = ui_get_jira_or_branch_ref()
+    project_id = ui_select_project(api, work_type)[0]
+    branch_ref = ui_get_jira_or_branch_ref()
     root_task_id = ui_create_root_dev_task(
         api, project_id, branch_ref, task_type, work_type, extra_labels=["bug/issue"])
     if subtasks_path:
@@ -45,7 +39,7 @@ if __name__ == "__main__":
     work_type = DevWorkType.WORK
     subtasks_path = ""
     project_name = ""
-    opts, args = getopt.getopt(sys.argv[1:], "", ["personal", "subtasks-path=", "task-type=", "nobranch", "project-name="])
+    opts, args = getopt.getopt(sys.argv[1:], "", ["personal", "subtasks-path=", "task-type="])
     for opt, arg in opts:
         if opt in "--personal":
             work_type = DevWorkType.PERSONAL
@@ -53,8 +47,4 @@ if __name__ == "__main__":
             subtasks_path = arg
         elif opt in "--task-type":
             task_type = DevTaskType[arg]
-        elif opt in "--nobranch":
-            no_branch = True
-        elif opt in "--project-name":
-            project_name = arg
-    sys.exit(main(subtasks_path, task_type, work_type, no_branch, project_name))
+    sys.exit(main(subtasks_path, task_type, work_type))
