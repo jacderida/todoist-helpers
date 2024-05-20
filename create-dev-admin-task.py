@@ -4,8 +4,8 @@ import getopt
 import os
 import sys
 
-from lib.tasks import DevTaskType
-from lib.tasks import DevWorkType
+from lib.tasks import TaskType
+from lib.tasks import WorkType
 from lib.ui import ui_create_root_dev_admin_task
 from lib.ui import ui_create_subtasks
 from lib.ui import ui_create_subtasks_from_file
@@ -27,7 +27,7 @@ def main(subtasks_path, work_type):
     root_task_id = ui_create_root_dev_admin_task(api, project_id, work_type)
     if subtasks_path:
         ui_create_subtasks_from_file(
-            api, subtasks_path, project_id, root_task_id, DevTaskType.ADMIN, work_type)
+            api, subtasks_path, project_id, root_task_id, TaskType.ADMIN, work_type)
     else:
         create_subtasks = questionary.confirm('Would you like to create any subtasks').ask()
         if create_subtasks:
@@ -35,16 +35,16 @@ def main(subtasks_path, work_type):
                 api,
                 root_task_id,
                 project_id,
-                DevTaskType.ADMIN,
+                TaskType.ADMIN,
                 work_type)
 
 if __name__ == '__main__':
-    work_type = DevWorkType.WORK
+    work_type = WorkType.WORK
     subtasks_path = ""
     opts, args = getopt.getopt(sys.argv[1:], "", ["personal", "subtasks-path="])
     for opt, arg in opts:
         if opt in "--personal":
-            work_type = DevWorkType.PERSONAL
+            work_type = WorkType.PERSONAL
         elif opt in "--subtasks-path":
             subtasks_path = arg
     sys.exit(main(subtasks_path, work_type))

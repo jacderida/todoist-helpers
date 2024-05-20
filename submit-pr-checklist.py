@@ -5,7 +5,7 @@ import re
 import subprocess
 import sys
 
-from lib.tasks import get_outstanding_dev_tasks, DevWorkType
+from lib.tasks import get_outstanding_dev_tasks, WorkType
 from lib.ui import ui_select_repository
 
 import questionary
@@ -98,7 +98,7 @@ def main():
         api.sync()
     dev_tasks = []
     with console.status('[bold green]Getting outstanding development tasks...') as _:
-        dev_tasks = get_outstanding_dev_tasks(api, DevWorkType.WORK)
+        dev_tasks = get_outstanding_dev_tasks(api, WorkType.WORK)
     task = select_dev_task(dev_tasks)
     if len(task.subtasks) > 3:
         console.print(

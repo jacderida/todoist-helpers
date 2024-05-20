@@ -1,8 +1,8 @@
 import os
 from pathlib import Path
 
-from .tasks import DevTaskType
-from .tasks import DevWorkType
+from .tasks import TaskType
+from .tasks import WorkType
 from .tasks import create_parent_task
 from .tasks import create_subtask
 from .tasks import create_subtasks_from_file
@@ -95,7 +95,7 @@ def ui_create_root_dev_admin_task(api, project_id, work_type, extra_labels=[]):
         validate=lambda answer: True if len(answer) > 0 else 'A name for the task must be provided'
     ).ask()
     root_task = create_parent_task(
-        api, task_name, project_id, DevTaskType.ADMIN, work_type, extra_labels=extra_labels)
+        api, task_name, project_id, TaskType.ADMIN, work_type, extra_labels=extra_labels)
     root_task_id = root_task.id
     return root_task_id
 
@@ -106,7 +106,7 @@ def ui_create_root_dev_investigation_task(api, project_id, work_type, extra_labe
         validate=lambda answer: True if len(answer) > 0 else 'A name for the task must be provided'
     ).ask()
     root_task = create_parent_task(
-        api, task_name, project_id, DevTaskType.INVESTIGATION, work_type, extra_labels=extra_labels)
+        api, task_name, project_id, TaskType.INVESTIGATION, work_type, extra_labels=extra_labels)
     root_task_id = root_task.id
     print()
     return root_task_id
@@ -140,9 +140,9 @@ def print_heading(heading):
 
 
 def ui_select_project(api, work_type):
-    if work_type == DevWorkType.WORK:
+    if work_type == WorkType.WORK:
         parent_id = WORK_PARENT_PROJECT_ID
-    elif work_type == DevWorkType.PERSONAL:
+    elif work_type == WorkType.PERSONAL:
         parent_id = PERSONAL_PARENT_PROJECT_ID
     else:
         raise ValueError(
@@ -161,7 +161,7 @@ def ui_select_project(api, work_type):
 def ui_select_work_type():
     choice = questionary.select(
         "Choose a work type:",
-        choices=[DevWorkType.WORK.name, DevWorkType.PERSONAL.name]
+        choices=[WorkType.WORK.name, WorkType.PERSONAL.name]
     ).ask()
-    selected_work_type = DevWorkType[choice]
+    selected_work_type = WorkType[choice]
     return selected_work_type

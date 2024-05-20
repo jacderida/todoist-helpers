@@ -38,24 +38,26 @@ class Task:
         api.commit()
 
 
-class DevTaskType(Enum):
+class TaskType(Enum):
     ADMIN = auto()
+    DEV = auto()
     INVESTIGATION = auto()
     NON_CODE = auto()
     TERRAFORM = auto()
+    RESEARCH = auto()
     RUST = auto()
     PYTHON = auto()
 
 
-class DevWorkType(Enum):
+class WorkType(Enum):
     WORK = auto()
     PERSONAL = auto()
 
 
 def get_outstanding_dev_tasks(api, work_type):
-    if work_type == DevWorkType.WORK:
+    if work_type == WorkType.WORK:
         parent_id = ACTIVE_WORK_PROJECTS_ID
-    elif work_type == DevWorkType.PERSONAL:
+    elif work_type == WorkType.PERSONAL:
         parent_id = ACTIVE_PERSONAL_PROJECTS_ID
     else:
         raise ValueError(
@@ -118,9 +120,7 @@ def create_subtasks_from_file(
             )
 
 
-def create_branch_subtask(
-    api, project_id, root_task_id, task_type, work_type, repo, branch
-):
+def create_branch_subtask(api, project_id, root_task_id, task_type, work_type, repo, branch):
     create_subtask(
         api,
         "Create branch `{branch}` on `{repo}`".format(branch=branch, repo=repo),
@@ -131,14 +131,12 @@ def create_branch_subtask(
     )
 
 
-def create_pr_checklist_subtask(
-    api, project_id, root_task_id, branch, task_type, work_type
-):
+def create_pr_checklist_subtask(api, project_id, root_task_id, branch, task_type, work_type):
     pr_checklist_subtask = create_subtask(
         api, "Perform PR checklist", project_id, task_type, work_type, root_task_id
     )
     pr_checklist_subtask_id = pr_checklist_subtask.id
-    if task_type == DevTaskType.RUST:
+    if task_type == TaskType.RUST:
         create_subtask(
             api,
             "Run `cargo clippy` on `{branch}`".format(branch=branch),
@@ -207,8 +205,8 @@ def create_jira_admin_task(api, project_id, root_task_id, jira_ref):
         api,
         f"Close `{jira_ref}`",
         project_id,
-        DevTaskType.ADMIN,
-        DevWorkType.WORK,
+        TaskType.ADMIN,
+        WorkType.WORK,
         root_task_id,
     )
 
@@ -252,6 +250,7 @@ def create_task(
     extra_labels=[],
     comment="",
     apply_date=False,
+    section_id=None,
 ):
     with console.status("[bold green]Creating task on Todoist...") as _:
         due = None
@@ -265,6 +264,7 @@ def create_task(
             ),
             parent_id=parent_id,
             project_id=project_id,
+            section_id=section_id
         )
         if parent_id:
             print("Created subtask '{name}'".format(name=task.content))
@@ -278,16 +278,16 @@ def create_task(
 
 def get_labels_for_task(task_type, work_type, extra_labels):
     labels = []
-    if work_type == DevWorkType.WORK:
+    if work_type == WorkType.WORK:
         labels.append("work")
-        labels.append("development")
-    elif work_type == DevWorkType.PERSONAL:
+    elif work_type == WorkType.PERSONAL:
         labels.append("home")
-        labels.append("development")
-    if task_type == DevTaskType.ADMIN:
+    if task_type == TaskType.ADMIN:
         labels.append("admin")
         labels.append("development")
-    if task_type == DevTaskType.INVESTIGATION:
+    elif task_type == TaskType.INVESTIGATION:
         labels.append("investigation")
         labels.append("development")
+    elif task_type == TaskType.RESEARCH:
+        labels.append("research")
     return labels + extra_labels

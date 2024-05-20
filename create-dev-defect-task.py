@@ -4,8 +4,8 @@ import getopt
 import os
 import sys
 
-from lib.tasks import DevTaskType
-from lib.tasks import DevWorkType
+from lib.tasks import TaskType
+from lib.tasks import WorkType
 from lib.tasks import create_jira_admin_task
 from lib.tasks import create_subtask
 from lib.tasks import create_subtasks_from_file
@@ -35,16 +35,16 @@ def main(subtasks_path, task_type, work_type):
 
 if __name__ == "__main__":
     no_branch = False;
-    task_type = DevTaskType.RUST
-    work_type = DevWorkType.WORK
+    task_type = TaskType.RUST
+    work_type = WorkType.WORK
     subtasks_path = ""
     project_name = ""
     opts, args = getopt.getopt(sys.argv[1:], "", ["personal", "subtasks-path=", "task-type="])
     for opt, arg in opts:
         if opt in "--personal":
-            work_type = DevWorkType.PERSONAL
+            work_type = WorkType.PERSONAL
         elif opt in "--subtasks-path":
             subtasks_path = arg
         elif opt in "--task-type":
-            task_type = DevTaskType[arg]
+            task_type = TaskType[arg]
     sys.exit(main(subtasks_path, task_type, work_type))
