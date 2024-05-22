@@ -73,7 +73,7 @@ def ui_create_subtasks(api, root_task_id, project_id, task_type, work_type):
 def ui_create_root_dev_task(
         api, project_id, branch_ref, task_type, work_type, repo='', extra_labels=[]):
     name = questionary.text(
-        'Provide a name for the development task:',
+        'Provide a name for the task:',
         validate=lambda answer: True if len(answer) > 0 else 'A name for the task must be provided'
     ).ask()
     task_name = name
@@ -97,6 +97,18 @@ def ui_create_root_dev_admin_task(api, project_id, work_type, extra_labels=[]):
     root_task = create_parent_task(
         api, task_name, project_id, TaskType.ADMIN, work_type, extra_labels=extra_labels)
     root_task_id = root_task.id
+    return root_task_id
+
+
+def ui_create_root_dev_bug_investigation_task(api, project_id, work_type, extra_labels=[]):
+    task_name = questionary.text(
+        'Provide a name for the bug investigation to carry out:',
+        validate=lambda answer: True if len(answer) > 0 else 'A name for the task must be provided'
+    ).ask()
+    root_task = create_parent_task(
+        api, task_name, project_id, TaskType.INVESTIGATION, work_type, extra_labels=extra_labels)
+    root_task_id = root_task.id
+    print()
     return root_task_id
 
 

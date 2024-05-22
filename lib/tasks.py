@@ -282,6 +282,7 @@ def get_labels_for_task(task_type, work_type, extra_labels):
         labels.append("work")
     elif work_type == WorkType.PERSONAL:
         labels.append("home")
+
     if task_type == TaskType.ADMIN:
         labels.append("admin")
         labels.append("development")
@@ -290,4 +291,7 @@ def get_labels_for_task(task_type, work_type, extra_labels):
         labels.append("development")
     elif task_type == TaskType.RESEARCH:
         labels.append("research")
+    elif task_type == TaskType.DEV:
+        labels.append("development")
+
     return labels + extra_labels
