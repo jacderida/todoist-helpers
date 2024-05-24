@@ -51,10 +51,18 @@ def ui_select_repository(header_text):
     return (owner, repo, owner_path.joinpath(repo))
 
 
-def ui_get_jira_or_branch_ref():
-    jira_ref = questionary.text(
-        'Please supply the JIRA or branch reference:', validate=JiraBranchRefValidator
-    ).ask()
+def ui_get_jira_or_branch_ref(initial_input=None):
+    if initial_input:
+        jira_ref = questionary.text(
+            'Please supply the JIRA or branch reference:',
+            default=initial_input,
+            validate=JiraBranchRefValidator
+        ).ask()
+    else:
+        jira_ref = questionary.text(
+            'Please supply the JIRA or branch reference:',
+            validate=JiraBranchRefValidator
+        ).ask()
     return jira_ref
 
 
@@ -73,7 +81,7 @@ def ui_create_subtasks(api, root_task_id, project_id, task_type, work_type):
 def ui_create_root_dev_task(
         api, project_id, branch_ref, task_type, work_type, repo='', extra_labels=[]):
     name = questionary.text(
-        'Provide a name for the task:',
+        'Provide a title for the work:',
         validate=lambda answer: True if len(answer) > 0 else 'A name for the task must be provided'
     ).ask()
     task_name = name

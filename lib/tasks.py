@@ -42,11 +42,7 @@ class TaskType(Enum):
     ADMIN = auto()
     DEV = auto()
     INVESTIGATION = auto()
-    NON_CODE = auto()
-    TERRAFORM = auto()
     RESEARCH = auto()
-    RUST = auto()
-    PYTHON = auto()
 
 
 class WorkType(Enum):
