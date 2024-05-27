@@ -30,6 +30,8 @@ VIDEO_SOURCES = {
     "WTC911demolition": "https://www.youtube.com/@WTC911demolition",
     "AE911Truth": "https://www.youtube.com/@ae911truthvideos",
     "NIST Review Archive Collection": "https://archive.org/details/nistreview",
+    "September 11 Television Archive" : "https://archive.org/details/sept_11_tv_archive",
+    "NBC: September 11th Television Archive" : "https://archive.org/details/NBC_TV"
 }
 
 
