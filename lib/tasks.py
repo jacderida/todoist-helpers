@@ -132,7 +132,7 @@ def create_pr_checklist_subtask(api, project_id, root_task_id, branch, task_type
         api, "Perform PR checklist", project_id, task_type, work_type, root_task_id
     )
     pr_checklist_subtask_id = pr_checklist_subtask.id
-    if task_type == TaskType.RUST:
+    if task_type == TaskType.DEV:
         create_subtask(
             api,
             "Run `cargo clippy` on `{branch}`".format(branch=branch),
